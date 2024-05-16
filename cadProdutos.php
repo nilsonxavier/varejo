@@ -11,6 +11,7 @@ require_once 'conexx/database.php';
 
  if(isset($_POST['nome'],$_POST['qtd'])){
     //Inserir dados na tabela
+    $database = new Database($conn);
     $database->inserirDados("produtos", $_POST['nome'], $_POST['qtd']);
  }
 
