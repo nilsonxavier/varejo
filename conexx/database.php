@@ -44,7 +44,7 @@ class Database {
         $result = $stmt->get_result();
         
         // Inicializa a string da tabela
-        $html = '<table class="table table-striped table-dark mt-2">';
+        $html = '<table class="table table-striped table-dark mt-2 text-center">';
         $html .= '<tr><th>Nome</th><th>Quantidade</th><th>Ação</th></tr>';
         
         // Loop através dos resultados e adicionar cada linha à tabela HTML
