@@ -13,10 +13,10 @@ $tabelaHTML = $database->getItemById("produtos", $_GET['id']);
  if(isset($_POST['nome'],$_POST['qtd'])){
    $novosDados = array('nome' => $_POST['nome'], 'qtd' => $_POST['qtd']);
    if ($database->editarItem("produtos", $_GET['id'], $novosDados)) {
-      header('location: produtos.php?status=editado');
+      header('location: produtos.php?status=Produto '.$_POST['nome'].' editado com sucesso');
       exit;
    } else {
-      header('location: produtos.php?status=erro');
+      header('location: produtos.php?status=Erro ao Editar '.$_POST['nome'].' tente novamente');
       exit;
    }
 }

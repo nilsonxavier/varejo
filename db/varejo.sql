@@ -25,6 +25,25 @@ CREATE USER 'erp'@'localhost' IDENTIFIED BY '@Ni33213264';
 -- PRIVILEGIOS AO DB
 GRANT ALL PRIVILEGES ON erp.* TO 'erp'@'localhost';
 
+-- apaga tabela se existir
+DROP TABLE IF EXISTS `clientes`;
+
+-- criar tabela clientes
+CREATE TABLE clientes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    rua VARCHAR(255),
+    numero VARCHAR(10),
+    cep VARCHAR(9),
+    bairro VARCHAR(100),
+    cidade VARCHAR(100),
+    complemento VARCHAR(255),
+    estado VARCHAR(100),
+    telefone1 VARCHAR(20),
+    telefone2 VARCHAR(20),
+    vendedor VARCHAR(100),
+    cpf VARCHAR(14) UNIQUE
+);
 
 --
 -- Table structure for table `produtos`
