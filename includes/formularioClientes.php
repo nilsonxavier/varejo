@@ -16,13 +16,13 @@
     </div>
   </div>
   <div class="form-group row ">
-    <label for="telefone1" class="col-sm-2 col-form-label">Telefone:</label>
+    <label for="telefone1" class="col-sm-2 col-form-label">Whatsapp:</label>
     <div class="col-sm-10">
       <input type="text" class="form-control" name="telefone1" placeholder="ex: 8599874569">
     </div>
   </div>
   <div class="form-group row ">
-    <label for="telefone2" class="col-sm-2 col-form-label">Telefone 2:</label>
+    <label for="telefone2" class="col-sm-2 col-form-label">Telefone:</label>
     <div class="col-sm-10">
       <input type="text" class="form-control" name="telefone2" placeholder="ex: 8599874569">
     </div>
