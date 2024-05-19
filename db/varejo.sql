@@ -28,22 +28,41 @@ GRANT ALL PRIVILEGES ON erp.* TO 'erp'@'localhost';
 -- apaga tabela se existir
 DROP TABLE IF EXISTS `clientes`;
 
--- criar tabela clientes
-CREATE TABLE clientes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    rua VARCHAR(255),
-    numero VARCHAR(10),
-    cep VARCHAR(9),
-    bairro VARCHAR(100),
-    cidade VARCHAR(100),
-    complemento VARCHAR(255),
-    estado VARCHAR(100),
-    telefone1 VARCHAR(20),
-    telefone2 VARCHAR(20),
-    vendedor VARCHAR(100),
-    cpf VARCHAR(14) UNIQUE
-);
+--
+-- Estrutura da tabela `clientes`
+--
+
+DROP TABLE IF EXISTS `clientes`;
+
+CREATE TABLE IF NOT EXISTS `clientes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nome` varchar(100) NOT NULL,
+  `rua` varchar(255) DEFAULT NULL,
+  `numero` varchar(10) DEFAULT NULL,
+  `cep` varchar(9) DEFAULT NULL,
+  `bairro` varchar(100) DEFAULT NULL,
+  `cidade` varchar(100) DEFAULT NULL,
+  `complemento` varchar(255) DEFAULT NULL,
+  `estado` varchar(100) DEFAULT NULL,
+  `telefone1` varchar(20) DEFAULT NULL,
+  `telefone2` varchar(20) DEFAULT NULL,
+  `vendedor` varchar(100) DEFAULT NULL,
+  `cpf` varchar(14) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cpf` (`cpf`)
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Extraindo dados da tabela `clientes`
+--
+
+INSERT INTO `clientes` (`id`, `nome`, `rua`, `numero`, `cep`, `bairro`, `cidade`, `complemento`, `estado`, `telefone1`, `telefone2`, `vendedor`, `cpf`) VALUES
+(2, 'Nilson Xavier de Freitas', 'Rua Cristo Redentor', '258', '60762465', 'Mondubim', 'Fortaleza', 'casa', 'CE', '84999923574', '85997415856', 'w222', '10397258488');
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
 --
 -- Table structure for table `produtos`
@@ -70,10 +89,8 @@ LOCK TABLES `produtos` WRITE;
 INSERT INTO `produtos` VALUES
 (1,'sacola-p',55,'2024-05-13 13:49:08'),
 (2,'sacola-M',55,'2024-05-13 13:51:35'),
-(3,'sacola-G',55,'2024-05-13 13:51:42'),
-(4,'231',2244,'2024-05-13 16:16:23'),
-(5,'23',22,'2024-05-13 16:18:27'),
-(6,'sacola gg',80,'2024-05-14 21:21:52');
+(3,'sacola-G',55,'2024-05-13 13:51:42');
+
 /*!40000 ALTER TABLE `produtos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
