@@ -33,6 +33,16 @@
           <a class="dropdown-item" href="#">Algo mais aqui</a>
         </div>
       </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Produção
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="producao.php">Lista</a>
+          <a class="dropdown-item" href="cadProducao.php">Cadastra</a>
+          <a class="dropdown-item" href="#">Algo mais aqui</a>
+        </div>
+      </li>
     </ul>
     <!-- <form class="form-inline my-2 my-lg-0">
       <input class="form-control mr-sm-2" type="search" placeholder="Pesquisar" aria-label="Pesquisar">

@@ -95,6 +95,23 @@ class Database {
         }
     }
 
+    // Método para pegar um campo pelo ID
+    public function getCampoById($nomeDaTabela, $id, $nomeDoCampo) {
+        $sql = "SELECT $nomeDoCampo FROM $nomeDaTabela WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            return $row[$nomeDoCampo];
+        } else {
+            return null;
+        }
+    }
+
 
     // metodo editar produto 
     public function editarItem($nomeDaTabela, $id, $novosDados) {
