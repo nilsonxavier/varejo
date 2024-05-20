@@ -27,18 +27,5 @@ function consultarCEP($cep) {
     ];
 }
 
-// Exemplo de uso da função
-$cep = "60-762465"; // Substitua pelo CEP que deseja consultar
-$endereco = consultarCEP($cep);
-
-// Exibe o endereço
-echo "CEP: " . $endereco['cep'] . "<br>";
-echo "Logradouro: " . $endereco['logradouro'] . "<br>";
-echo "Bairro: " . $endereco['bairro'] . "<br>";
-echo "Localidade: " . $endereco['localidade'] . "<br>";
-echo "UF: " . $endereco['uf'] . "<br>";
-
-
-
 include __DIR__.'/includes/footer.php';
 

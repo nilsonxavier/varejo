@@ -3,8 +3,6 @@
 require_once 'config.php';
 require_once 'database.php';
 
-
-
 if (isset($_POST['data_inicio'], $_POST['produto_id'], $_POST['quantidade'], $_POST['material_utilizado'], $_POST['data_fim'])) {
     $data_inicio = $_POST['data_inicio'];
     $produto_id = $_POST['produto_id'];
@@ -35,21 +33,13 @@ if (isset($_POST['data_inicio'], $_POST['produto_id'], $_POST['quantidade'], $_P
     $stmt->bind_param("sssssss", $data_inicio, $data_fim, $produto_id, $quantidade, $material_utilizado, $totalHoras, $status);
 
 
-    // pega a quantidade e atualizar 
-    // $database = new Database($conn);
-    // $tabelaHTML = $database->getCampoById("produtos", $produto_id, "qtd");
+    //pega a quantidade e atualizar 
+    $database = new Database($conn);
+    $tabelaHTML = $database->getCampoById("produtos", $produto_id, "qtd");
+    $atualizado = $tabelaHTML + $quantidade;
+    $novosDados = array('qtd' => $atualizado);
+    $database->editarItem("produtos", $produto_id, $novosDados);
 
-
-    // if(isset($tabelaHTML === null)){
-    //     $novosDados = array('nome' => $_POST['nome'], 'qtd' => $_POST['qtd']);
-    //     if ($database->editarItem("produtos", $_GET['id'], $novosDados)) {
-    //        header('location: produtos.php?status=Produto '.$_POST['nome'].' editado com sucesso');
-    //        exit;
-    //     } else {
-    //        header('location: produtos.php?status=Erro ao Editar '.$_POST['nome'].' tente novamente');
-    //        exit;
-    //     }
-    //  }
 
     
     if ($stmt->execute()) {
@@ -85,14 +75,7 @@ try {
     echo "Erro: " . $e->getMessage();
     exit;
 }
-
-
-
-
-
-
-
-
-
 $conn->close();
+
+
 ?>
