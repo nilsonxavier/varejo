@@ -104,3 +104,23 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2024-05-15  1:37:04
+
+
+--
+-- Estrutura da tabela `ordens_producao`
+--
+
+DROP TABLE IF EXISTS `ordens_producao`;
+CREATE TABLE IF NOT EXISTS `ordens_producao` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `data_inicio` datetime DEFAULT NULL,
+  `data_fim` datetime DEFAULT NULL,
+  `produto_id` int DEFAULT NULL,
+  `quantidade` int DEFAULT NULL,
+  `status` varchar(20) DEFAULT NULL,
+  `material_utilizado` text,
+  `tempo_producao` time DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `produto_id` (`produto_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=23 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
