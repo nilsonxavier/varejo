@@ -49,7 +49,7 @@
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
           <a class="dropdown-item" href="FormularioVenda.php">Cad Venda</a>
-          <a class="dropdown-item" href="cadProducao.php">Cadastra</a>
+          <a class="dropdown-item" href="listarVendas.php">Lista Vendas</a>
           <a class="dropdown-item" href="#">Algo mais aqui</a>
         </div>
       </li>

@@ -124,3 +124,5 @@ CREATE TABLE IF NOT EXISTS `ordens_producao` (
   KEY `produto_id` (`produto_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=23 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
+
+
