@@ -45,13 +45,13 @@ if (isset($_POST['data_inicio'], $_POST['produto_id'], $_POST['quantidade'], $_P
     if ($stmt->execute()) {
         $mens = '<div class="alert alert-success text-center mt-2">Produção inserida com sucesso</div>';
         // Redireciona para outra_pagina.php e envia a mensagem como parâmetro na URL
-        header("Location: ../cadProducao.php?mensagem=" . urlencode($mens));
+        header("Location: ../cadProducaoSacola.php?mensagem=" . urlencode($mens));
         exit; // É importante sair do script após o redirecionamento
 
     
     } else {
         $mens = '<div class="alert alert-danger text-center mt-2">erro ao inserir: </div>' . $stmt->error;
-        header("Location: ../cadProducao.php?mensagem=" . urlencode($mens));
+        header("Location: ../cadProducaoSacola.php?mensagem=" . urlencode($mens));
         exit;
     }
 

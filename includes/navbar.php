@@ -38,8 +38,11 @@
           Produção
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-          <a class="dropdown-item" href="producao.php">Lista</a>
-          <a class="dropdown-item" href="cadProducao.php">Cadastra</a>
+          <a class="dropdown-item" href="producao.php">Lista Sacolas</a>
+          <a class="dropdown-item" href="producao.php">Lista Bobinas</a>
+          <a class="dropdown-item" href="cadProducaoBobina.php">Cadastra Bobina</a>
+          <a class="dropdown-item" href="cadProducaoSacola.php">Cadastra Sacola</a>
+          <a class="dropdown-item" href="#">Algo mais aqui</a>
           <a class="dropdown-item" href="#">Algo mais aqui</a>
         </div>
       </li>

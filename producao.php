@@ -54,10 +54,12 @@ include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
 ?>
 
-    <div style="width: 75%; margin: 0 auto;">
+
+    <div style="width: 75%; margin: 0 auto;" onload="formatarDataHora()">
         <form method="GET" action="">
             Data Inicial: <input type="date" name="data_inicial">
             Data Final: <input type="date" name="data_final">
+            
             <button type="submit">Visualizar</button>
         </form>
         <canvas id="myChart"></canvas>
