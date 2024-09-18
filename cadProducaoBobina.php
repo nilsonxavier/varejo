@@ -14,37 +14,51 @@
 
 
 <blockquote class="blockquote text-center mt-3" onload="formatarDataHora()">
-    <p class="mb-0">Cadastra Produção</p>
+    <p class="mb-0">Cadastra Produção de Bobinas</p>
 </blockquote>
-<form action="conexx/databaseProducao.php" method="POST">
-    <input type="hidden" id="data_hora" name="data_inicial" readonly>
-         
+<form action="conexx/databaseProducaoBobina.php" method="POST">
+       
     <div class="form-group row">
-        <label for="inputPassword3" class="col-sm-2 col-form-label">Produto</label>
+        <label for="inputPassword3" class="col-sm-2 col-form-label">Bobina:</label>
         <div class="col-sm-10">
-            <select id="usuario" name="produto_id" class="custom-select">
+            <select id="usuario" name="produto_nome" class="custom-select" required>
+            <option value="" selected disabled>Selecione um Produto</option>
                 <?php
               // Incluindo o arquivo PHP que busca os dados do banco
-              include 'conexx/databaseProducao.php';
+              include 'conexx/databaseProducaoBobina.php';
 
               // Gerando as opções do dropdown
               foreach ($usuarios as $usuario) {
-                  echo '<option value="' . htmlspecialchars($usuario['id']) . '">' . htmlspecialchars($usuario['nome']) . '</option>';
+                  echo '<option value="' . htmlspecialchars($usuario['nome']) . '">' . htmlspecialchars($usuario['nome']) . '</option>';
+              }
+              ?>
+            </select><br><br>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="inputPassword4" class="col-sm-2 col-form-label">Operador:</label>
+        <div class="col-sm-10">
+            <select id="usuario" name="operador_nome" class="custom-select" required>
+            <option value="" selected disabled>Selecione um Operador</option>
+                <?php
+              // Gerando as opções do dropdown
+              foreach ($funcionario as $funcionarios) {
+                  echo '<option value="' . htmlspecialchars($funcionarios['nome']) . '">' . htmlspecialchars($funcionarios['nome']) . '</option>';
               }
               ?>
             </select><br><br>
         </div>
     </div>
     <div class="form-group row mt-1">
-        <label for="nome" class="col-sm-2 col-form-label">Qantidade Produzida:</label>
+        <label for="nome" class="col-sm-2 col-form-label">Quantidade Produzida:</label>
         <div class="col-sm-10">
-            <input type="number" class="form-control" name="quantidade" placeholder="Sacolas em KG">
+            <input type="number" step="0.01" class="form-control" name="quantidade" placeholder="Bobina em KG" required>
         </div>
     </div>
     <div class="form-group row mt-1">
-        <label for="nome" class="col-sm-2 col-form-label">Material Utilizado:</label>
+        <label for="nome" class="col-sm-2 col-form-label">Grao utilizado:</label>
         <div class="col-sm-10">
-            <input type="number" class="form-control" name="material_utilizado" placeholder="bobina em KG">
+            <input type="number" step="0.01" class="form-control" name="grao" placeholder="Grao em KG" required>
         </div>
     </div>
 
@@ -79,10 +93,5 @@
 
         formatarDataHora(); // Chama a função após o conteúdo do body ter sido carregado
 </script>
-
-
-
-
-
 
 <?php include __DIR__.'/includes/footer.php'; 
