@@ -34,7 +34,20 @@
             margin-top: 8px;
             font-weight: bold;
             font-size: 1rem;
+            color: #333;
+            text-align: center;
+            word-wrap: break-word; /* Permite quebra de linha em títulos longos */
         }
+
+        /* Responsividade */
+        @media (max-width: 576px) {
+            .btn-image img {
+                width: 100%;
+                height: auto; /* Mantém a imagem responsiva em dispositivos muito pequenos */
+            }
+        }
+
+
     </style>
     <title>ERP</title>
   </head>
