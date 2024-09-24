@@ -11,7 +11,7 @@ include __DIR__.'/includes/navbar.php';
             // Exemplo de dados de imagens, URLs e títulos
             $imagens = [
                 ['src' => 'https://via.placeholder.com/150', 'url' => 'pagina1.php', 'titulo' => 'Vendas'],
-                ['src' => 'imgs/estoque.jpg', 'url' => 'pagina2.php', 'titulo' => 'Estoque'],
+                ['src' => 'imgs/estoque.jpg', 'url' => 'produtos.php', 'titulo' => 'Estoque'],
                 ['src' => 'https://via.placeholder.com/150', 'url' => 'pagina3.php', 'titulo' => 'Imagem 3'],
                 ['src' => 'https://via.placeholder.com/150', 'url' => 'pagina4.php', 'titulo' => 'Imagem 4'],
                 // Adicione mais imagens conforme necessário
