@@ -14,7 +14,7 @@
       </li> -->
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Produtossss
+          Produto
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
           <a class="dropdown-item" href="produtos.php">Lista</a>
@@ -35,15 +35,15 @@
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Produçãooo
+          Produção
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
           <a class="dropdown-item" href="producao.php">Lista Sacolas</a>
           <a class="dropdown-item" href="producao.php">Lista Bobinas</a>
           <a class="dropdown-item" href="cadProducaoBobina.php">Cadastra Bobina</a>
           <a class="dropdown-item" href="cadProducaoSacola.php">Cadastra Sacola</a>
-          <a class="dropdown-item" href="#">Algo mais aqui-kkkk</a>
-          <a class="dropdown-item" href="#">Algo mais aqui55</a>
+          <a class="dropdown-item" href="#">Algo mais aqui</a>
+          <a class="dropdown-item" href="#">Algo mais aqui</a>
         </div>
       </li>
       <li class="nav-item dropdown">
@@ -53,7 +53,7 @@
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
           <a class="dropdown-item" href="FormularioVenda.php">Cad Venda</a>
           <a class="dropdown-item" href="listarVendas.php">Lista Vendas</a>
-          <a class="dropdown-item" href="#">Algo mais qqq</a>
+          <a class="dropdown-item" href="#">Algo mais/a>
         </div>
       </li>
     </ul>
