@@ -31,9 +31,6 @@ include __DIR__.'/includes/navbar.php';
   </div>
 </div>
 
-<!-- Bootstrap Bundle (JS) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <?php
 // Função para consultar o CEP e retornar o endereço
 function consultarCEP($cep) {
@@ -51,3 +48,4 @@ function consultarCEP($cep) {
 }
 
 include __DIR__.'/includes/footer.php';
+?>
