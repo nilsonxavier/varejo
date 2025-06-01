@@ -40,7 +40,7 @@ include __DIR__.'/includes/navbar.php';
 ?>
 
     <div class="container mt-5">
-        <h1 class="text-center">Adicionar Venda</h1>
+        <h1 class="text-center">PDV Vendas</h1>
         <form method="post">
             <div class="form-group">
                 <label for="id_cliente">Cliente:</label>
