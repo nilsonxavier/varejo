@@ -42,8 +42,8 @@
           <a class="dropdown-item" href="producao.php">Lista Bobinas</a>
           <a class="dropdown-item" href="cadProducaoBobina.php">Cadastra Bobina</a>
           <a class="dropdown-item" href="cadProducaoSacola.php">Cadastra Sacola</a>
-          <a class="dropdown-item" href="#">Algo mais aqui</a>
-          <a class="dropdown-item" href="#">Algo mais aqui</a>
+          <a class="dropdown-item" href="#">Algo mais aqui-k</a>
+          <a class="dropdown-item" href="#">Algo mais aqui55</a>
         </div>
       </li>
       <li class="nav-item dropdown">
