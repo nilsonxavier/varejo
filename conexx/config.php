@@ -1,5 +1,8 @@
 <?php
-$servername = "localhost";
+// ativa a linha abaixo para usar o servidor local
+//$servername = "localhost";
+// servidor teste remoto ativa esse e comenta a linha de cima
+$servername = "bdd.elitevenda.com.br";
 $username = "erp";
 $password = "@Ni33213264";
 $dbname = "erp";
