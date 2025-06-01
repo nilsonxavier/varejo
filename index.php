@@ -9,10 +9,10 @@ include __DIR__.'/includes/navbar.php';
     <?php
     // Dados de imagens, URLs e títulos
     $imagens = [
-      ['src' => 'https://via.placeholder.com/150', 'url' => 'pagina1.php', 'titulo' => 'Vendas'],
-      ['src' => 'imgs/estoque.jpg', 'url' => 'produtos.php', 'titulo' => 'Estoque'],
-      ['src' => 'https://via.placeholder.com/150', 'url' => 'pagina3.php', 'titulo' => 'Imagem 3'],
-      ['src' => 'https://via.placeholder.com/150', 'url' => 'pagina4.php', 'titulo' => 'Imagem 4'],
+      ['src' => 'imgs/vendas.png', 'url' => 'pagina1.php', 'titulo' => 'Vendas'],
+      ['src' => 'imgs/estoque.png', 'url' => 'produtos.php', 'titulo' => 'Estoque'],
+      ['src' => 'imgs/clientes.png', 'url' => 'pagina3.php', 'titulo' => 'clientes'],
+      ['src' => 'imgs/financeiro.png', 'url' => 'pagina4.php', 'titulo' => 'financeiro'],
     ];
 
     // Gerar os botões com imagens e títulos
