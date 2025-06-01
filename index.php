@@ -13,7 +13,7 @@ include __DIR__.'/includes/navbar.php';
     <?php
     // Dados de imagens, URLs e títulos
     $imagens = [
-      ['src' => 'imgs/vendas.png', 'url' => 'pagina1.php', 'titulo' => 'Vendas'],
+      ['src' => 'imgs/vendas.png', 'url' => 'pagina1.php', 'titulo' => 'Vendass'],
       ['src' => 'imgs/estoque.png', 'url' => 'produtos.php', 'titulo' => 'Estoque'],
       ['src' => 'imgs/clientes.png', 'url' => 'pagina3.php', 'titulo' => 'clientes'],
       ['src' => 'imgs/financeiro.png', 'url' => 'pagina4.php', 'titulo' => 'financeiro'],
