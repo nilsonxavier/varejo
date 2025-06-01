@@ -5,8 +5,6 @@ include __DIR__.'/includes/navbar.php';
 
 
 
-
-
 <!-- Layout fluido, com padding para respirar -->
 <div class="container-fluid p-3 mt-4">
   <div class="row g-4 justify-content-center">
