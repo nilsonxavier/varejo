@@ -1,8 +1,16 @@
+
+
 <?php
 require_once '../conexx/config.php';
 
-$busca = $_GET['busca'] ?? '';
+//$busca = $_GET['busca'] ?? '';
+$termo = $_GET['termo'] ?? '';
 $idCliente = $_GET['idCliente'] ?? 0;
+if (strlen($termo) < 2) {
+    echo json_encode([]);
+    exit;
+}
+
 
 // 1. Buscar qual tabela de preços o cliente usa
 $query = "SELECT tabela_preco_id FROM clientes WHERE id = ?";
@@ -31,7 +39,7 @@ $query = "
 ";
 
 $stmt = $conn->prepare($query);
-$buscaLike = '%' . $busca . '%';
+$buscaLike = '%' . $termo . '%';
 $stmt->bind_param("iss", $tabelaId, $buscaLike, $buscaLike);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -43,3 +51,6 @@ while ($row = $result->fetch_assoc()) {
 
 header('Content-Type: application/json');
 echo json_encode($produtos);
+
+
+

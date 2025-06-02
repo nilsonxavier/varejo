@@ -132,11 +132,12 @@ inputBusca.addEventListener('keydown', (e) => {
         }
         // Senão seleciona o item destacado
         if (produtosCache.length > 0) {
-            const p = produtosCache[indiceSelecionado];
-            selecionarProduto(p.id, p.nome, p.preco);
-            resultadoBusca.innerHTML = '';
-            quantidadeInput.focus();
-        }
+    const p = produtosCache[indiceSelecionado] || produtosCache[0]; // Garante fallback
+    selecionarProduto(p.id, p.nome, p.preco);
+    resultadoBusca.innerHTML = '';
+    setTimeout(() => quantidadeInput.focus(), 10); // Garante foco após o DOM atualizar
+}
+
     }
 });
 
@@ -174,12 +175,19 @@ function mostrarResultados(produtos) {
         resultadoBusca.innerHTML = '<div class="list-group-item">Nenhum produto encontrado</div>';
         return;
     }
+
     let html = '';
     produtos.forEach((prod, i) => {
-        html += `<a href="#" class="list-group-item list-group-item-action${i === 0 ? ' active' : ''}" data-index="${i}" onclick="selecionarProduto(${prod.id}, '${prod.nome}', ${prod.preco}); return false;">${prod.nome} (ID: ${prod.id})</a>`;
+        html += `<a href="#" class="list-group-item list-group-item-action${i === 0 ? ' active' : ''}" data-index="${i}" onclick="selecionarProduto(${prod.id}, '${prod.nome}', ${prod.preco}); return false;" tabindex="0">${prod.nome} (ID: ${prod.id})</a>`;
     });
+
     resultadoBusca.innerHTML = html;
+
+    // Foca no primeiro item da lista assim que for exibido
+    const primeiroItem = resultadoBusca.querySelector('a.list-group-item');
+    if (primeiroItem) primeiroItem.focus();
 }
+
 
 function atualizarSelecao() {
     const itens = resultadoBusca.querySelectorAll('a.list-group-item');
@@ -200,7 +208,7 @@ function selecionarProduto(id, nome, preco) {
     document.getElementById('form_detalhes').style.display = 'block';
 
     // Atualiza também o texto do produto selecionado, se estiver visível
-    document.getElementById('produto_selecionado_texto').textContent = nome;
+    document.getElementById('produto_selecionado').textContent = nome;
 
     document.getElementById('quantidade').focus();
 }
