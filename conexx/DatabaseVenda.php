@@ -26,30 +26,45 @@ class DatabaseVenda {
 
     // Método para listar todas as vendas
     public function listarVendas($nomeDaTabela) {
-        $sql = "SELECT * FROM $nomeDaTabela";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
-        $result = $stmt->get_result();
+    $sql = "SELECT * FROM $nomeDaTabela";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-        $html = '<table class="table table-bordered table-striped table-dark mt-2 table-responsive">';
-        $html .= '<tr><th>ID Cliente</th><th>Data da Venda</th><th>Valor Total</th><th>Itens</th><th>Ação</th></tr>';
+    $html = '<div class="table-responsive mt-3">';
+    $html .= '<table class="table table-bordered table-hover align-middle text-center">';
+    $html .= '
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">ID Cliente</th>
+                <th scope="col">Data da Venda</th>
+                <th scope="col">Valor Total (R$)</th>
+                <th scope="col">Itens</th>
+                <th scope="col">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+    ';
 
-        while ($row = $result->fetch_assoc()) {
-            $html .= '<tr>';
-            $html .= '<td>' . $row['id_cliente'] . '</td>';
-            $html .= '<td>' . $row['data_venda'] . '</td>';
-            $html .= '<td>' . $row['valor_total'] . '</td>';
-            $html .= '<td>' . $row['itens'] . '</td>';
-            $html .= '<td>';
-            $html .= '<a href="./excluirVenda.php?id=' . $row['id'] . '">Excluir</a> | ';
-            $html .= '<a href="./editarVenda.php?id=' . $row['id'] . '">Editar</a>';
-            $html .= '</td>';
-            $html .= '</tr>';
-        }
-
-        $html .= '</table>';
-        return $html;
+    while ($row = $result->fetch_assoc()) {
+        $html .= '<tr>';
+        $html .= '<td>' . htmlspecialchars($row['id_cliente']) . '</td>';
+        $html .= '<td>' . htmlspecialchars($row['data_venda']) . '</td>';
+        $html .= '<td>' . number_format($row['valor_total'], 2, ',', '.') . '</td>';
+        $html .= '<td style="max-width: 300px; word-break: break-word;">' . nl2br(htmlspecialchars($row['itens'])) . '</td>';
+        $html .= '<td>
+            <a href="./editarVenda.php?id=' . $row['id'] . '" class="btn btn-sm btn-warning me-1">Editar</a>
+            <a href="./excluirVenda.php?id=' . $row['id'] . '" class="btn btn-sm btn-danger" onclick="return confirm(\'Tem certeza que deseja excluir esta venda?\')">Excluir</a>
+        </td>';
+        $html .= '</tr>';
     }
+
+    $html .= '</tbody></table></div>';
+    return $html;
+    }
+
+
+     
 
     // Método para obter uma venda específica por ID
     public function obterVenda($nomeDaTabela, $id) {
