@@ -1,4 +1,8 @@
 <?php
+
+require_once 'verifica_login.php';
+// ... resto da página protegida ...
+
 require_once 'conexx/config.php';
 require_once 'conexx/classProducao.php';
 
