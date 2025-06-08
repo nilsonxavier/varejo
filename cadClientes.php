@@ -1,5 +1,8 @@
 <?php
 
+require_once 'verifica_login.php';
+// ... resto da página protegida ...
+
 // Inclua a classe Database
 //require_once 'conexx/database.php';
 // Inclua a classe Database

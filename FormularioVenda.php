@@ -1,5 +1,9 @@
 <?php
 //require_once 'config.php';
+
+require_once 'verifica_login.php';
+// ... resto da página protegida ...
+
 require_once 'conexx/DatabaseVenda.php';
 
 $venda = new DatabaseVenda($conn);
