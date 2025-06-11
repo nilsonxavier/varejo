@@ -4,12 +4,10 @@ require_once 'conexx/config.php';
 
 $usuario_id = $_SESSION['usuario_id'];
 
-// Verifica se existe caixa aberto
 $caixa_aberto = $conn->query("SELECT * FROM caixas WHERE status = 'aberto' ORDER BY id DESC LIMIT 1")->fetch_assoc();
 
 // Abertura de caixa
 if (isset($_POST['abrir_caixa'])) {
-    // Revalida para evitar duplicação em requisições simultâneas
     $existe_caixa_aberto = $conn->query("SELECT id FROM caixas WHERE status = 'aberto'")->num_rows;
     if ($existe_caixa_aberto > 0) {
         header("Location: caixa.php");
@@ -38,7 +36,7 @@ if (isset($_POST['registrar_movimentacao']) && $caixa_aberto) {
     exit;
 }
 
-// Fechar caixa com transação
+// Fechar caixa
 if (isset($_POST['fechar_caixa']) && $caixa_aberto) {
     $conn->begin_transaction();
 
@@ -66,44 +64,39 @@ if (isset($_POST['fechar_caixa']) && $caixa_aberto) {
 
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
-include __DIR__.'/includes/footer.php';
-
 ?>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Controle de Caixa</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="p-4 bg-light">
-<div class="container bg-white p-4 rounded shadow">
-    <h2 class="mb-4">Controle de Caixa</h2>
+
+<div class="container bg-white p-4 rounded shadow-sm mt-4">
+    <h2 class="mb-4">💰 Controle de Caixa</h2>
 
     <?php if (!$caixa_aberto): ?>
-        <form method="post" class="mb-4">
+        <form method="post" class="mb-4 card p-3 bg-light border-0 shadow-sm" onsubmit="this.querySelector('button[type=submit]').disabled = true;">
             <label class="form-label">Valor Inicial:</label>
             <input type="number" name="valor_inicial" step="0.01" min="0" required class="form-control mb-2">
             <button type="submit" name="abrir_caixa" class="btn btn-success">Abrir Caixa</button>
         </form>
     <?php else: ?>
-        <div class="mb-4">
-            <p><strong>Caixa aberto em:</strong> <?= $caixa_aberto['data_abertura'] ?></p>
-            <p><strong>Valor inicial:</strong> R$ <?= number_format($caixa_aberto['valor_inicial'], 2, ',', '.') ?></p>
+        <div class="alert alert-info">
+            <strong>Caixa Aberto:</strong><br>
+            Abertura: <?= $caixa_aberto['data_abertura'] ?><br>
+            Valor Inicial: <strong>R$ <?= number_format($caixa_aberto['valor_inicial'], 2, ',', '.') ?></strong>
         </div>
 
-        <form method="post" class="row g-2 mb-4">
+        <form method="post" class="row g-2 align-items-end mb-4 p-3 bg-light border rounded shadow-sm" onsubmit="this.querySelector('button[type=submit]').disabled = true;">
             <div class="col-md-2">
+                <label class="form-label">Tipo</label>
                 <select name="tipo" class="form-select" required>
                     <option value="entrada">Entrada</option>
                     <option value="saida">Saída</option>
                 </select>
             </div>
             <div class="col-md-2">
-                <input type="number" name="valor" step="0.01" min="0" required class="form-control" placeholder="Valor">
+                <label class="form-label">Valor</label>
+                <input type="number" name="valor" step="0.01" min="0" required class="form-control">
             </div>
             <div class="col-md-6">
-                <input type="text" name="descricao" required class="form-control" placeholder="Descrição">
+                <label class="form-label">Descrição</label>
+                <input type="text" name="descricao" required class="form-control">
             </div>
             <div class="col-md-2">
                 <button type="submit" name="registrar_movimentacao" class="btn btn-primary w-100">Registrar</button>
@@ -116,85 +109,106 @@ include __DIR__.'/includes/footer.php';
 
         <hr>
 
-        <h4>Movimentações</h4>
-        <table class="table table-bordered">
-            <thead>
+        <h4 class="mt-4">📋 Movimentações</h4>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Descrição</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $caixa_id = $caixa_aberto['id'];
+                    $stmt = $conn->prepare("SELECT tipo, valor, descricao, data_movimentacao FROM movimentacoes WHERE caixa_id = ? ORDER BY data_movimentacao DESC");
+                    $stmt->bind_param("i", $caixa_id);
+                    $stmt->execute();
+                    $movs = $stmt->get_result();
+
+                    $total_entradas = 0;
+                    $total_saidas = 0;
+                    while ($mov = $movs->fetch_assoc()):
+                        if ($mov['tipo'] === 'entrada') {
+                            $total_entradas += $mov['valor'];
+                        } else {
+                            $total_saidas += $mov['valor'];
+                        }
+                    ?>
+                        <tr>
+                            <td><span class="badge bg-<?= $mov['tipo'] === 'entrada' ? 'success' : 'danger' ?>"><?= ucfirst($mov['tipo']) ?></span></td>
+                            <td>R$ <?= number_format($mov['valor'], 2, ',', '.') ?></td>
+                            <td><?= htmlspecialchars($mov['descricao']) ?></td>
+                            <td><?= $mov['data_movimentacao'] ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <?php $saldo_atual = $caixa_aberto['valor_inicial'] + $total_entradas - $total_saidas; ?>
+        <div class="row text-center my-4">
+            <div class="col-md-4">
+                <div class="card text-bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title">Entradas</h5>
+                        <p class="card-text fs-5">R$ <?= number_format($total_entradas, 2, ',', '.') ?></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-bg-danger">
+                    <div class="card-body">
+                        <h5 class="card-title">Saídas</h5>
+                        <p class="card-text fs-5">R$ <?= number_format($total_saidas, 2, ',', '.') ?></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-bg-primary">
+                    <div class="card-body">
+                        <h5 class="card-title">Saldo Atual</h5>
+                        <p class="card-text fs-5">R$ <?= number_format($saldo_atual, 2, ',', '.') ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <hr class="my-5">
+
+    <h3>📚 Caixas Anteriores</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-secondary">
                 <tr>
-                    <th>Tipo</th>
-                    <th>Valor</th>
-                    <th>Descrição</th>
-                    <th>Data</th>
+                    <th>ID</th>
+                    <th>Aberto em</th>
+                    <th>Fechado em</th>
+                    <th>Valor Inicial</th>
+                    <th>Valor Final</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 <?php
-                $caixa_id = $caixa_aberto['id'];
-                $stmt = $conn->prepare("SELECT tipo, valor, descricao, data_movimentacao FROM movimentacoes WHERE caixa_id = ? ORDER BY data_movimentacao DESC");
-                $stmt->bind_param("i", $caixa_id);
-                $stmt->execute();
-                $movs = $stmt->get_result();
-
-                $total_entradas = 0;
-                $total_saidas = 0;
-                while ($mov = $movs->fetch_assoc()):
-                    if ($mov['tipo'] === 'entrada') {
-                        $total_entradas += $mov['valor'];
-                    } else {
-                        $total_saidas += $mov['valor'];
-                    }
+                $result = $conn->query("SELECT * FROM caixas WHERE status = 'fechado' ORDER BY id DESC LIMIT 10");
+                while ($cx = $result->fetch_assoc()):
                 ?>
                     <tr>
-                        <td><?= ucfirst($mov['tipo']) ?></td>
-                        <td>R$ <?= number_format($mov['valor'], 2, ',', '.') ?></td>
-                        <td><?= htmlspecialchars($mov['descricao']) ?></td>
-                        <td><?= $mov['data_movimentacao'] ?></td>
+                        <td><?= $cx['id'] ?></td>
+                        <td><?= $cx['data_abertura'] ?></td>
+                        <td><?= $cx['data_fechamento'] ?></td>
+                        <td>R$ <?= number_format($cx['valor_inicial'], 2, ',', '.') ?></td>
+                        <td>R$ <?= number_format($cx['valor_final'], 2, ',', '.') ?></td>
+                        <td><a href="detalhes_caixa.php?id=<?= $cx['id'] ?>" class="btn btn-sm btn-outline-primary">Ver</a></td>
                     </tr>
                 <?php endwhile; ?>
             </tbody>
         </table>
-
-        <?php
-        $saldo_atual = $caixa_aberto['valor_inicial'] + $total_entradas - $total_saidas;
-        ?>
-        <div class="mt-4">
-            <p><strong>Total de Entradas:</strong> R$ <?= number_format($total_entradas, 2, ',', '.') ?></p>
-            <p><strong>Total de Saídas:</strong> R$ <?= number_format($total_saidas, 2, ',', '.') ?></p>
-            <p><strong>Saldo Atual:</strong> R$ <?= number_format($saldo_atual, 2, ',', '.') ?></p>
-        </div>
-    <?php endif; ?>
-    <hr class="my-5">
-
-<h3>Caixas Anteriores</h3>
-<table class="table table-bordered table-striped">
-    <thead class="table-secondary">
-        <tr>
-            <th>ID</th>
-            <th>Aberto em</th>
-            <th>Fechado em</th>
-            <th>Valor Inicial</th>
-            <th>Valor Final</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        $result = $conn->query("SELECT * FROM caixas WHERE status = 'fechado' ORDER BY id DESC LIMIT 10");
-        while ($cx = $result->fetch_assoc()):
-        ?>
-            <tr>
-                <td><?= $cx['id'] ?></td>
-                <td><?= $cx['data_abertura'] ?></td>
-                <td><?= $cx['data_fechamento'] ?></td>
-                <td>R$ <?= number_format($cx['valor_inicial'], 2, ',', '.') ?></td>
-                <td>R$ <?= number_format($cx['valor_final'], 2, ',', '.') ?></td>
-                <td>
-                    <a href="detalhes_caixa.php?id=<?= $cx['id'] ?>" class="btn btn-sm btn-outline-primary">Ver</a>
-                </td>
-            </tr>
-        <?php endwhile; ?>
-    </tbody>
-</table>
-
+    </div>
 </div>
-</body>
-</html>
+
+<?php include __DIR__.'/includes/footer.php'; ?>
