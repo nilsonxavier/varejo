@@ -105,7 +105,7 @@
           </a>
           <ul class="dropdown-menu" aria-labelledby="vendasDropdown">
             <li><a class="dropdown-item" href="gerenciar_usuarios.php">Usuarios</a></li>
-            <li><a class="dropdown-item" href="#">Livro caixa</a></li>
+            <li><a class="dropdown-item" href="caixa.php">Caixa</a></li>
             
           </ul>
         </li>
