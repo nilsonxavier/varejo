@@ -60,7 +60,7 @@
           <ul class="dropdown-menu" aria-labelledby="produtoDropdown">
             <li><a class="dropdown-item" href="produtos.php">Lista</a></li>
             <li><a class="dropdown-item" href="cadProdutos.php">Cadastra</a></li>
-            <li><a class="dropdown-item" href="#">Algo mais aqui</a></li>
+          
           </ul>
         </li>
 
@@ -71,7 +71,7 @@
           <ul class="dropdown-menu" aria-labelledby="clienteDropdown">
             <li><a class="dropdown-item" href="clientes.php">Lista</a></li>
             <li><a class="dropdown-item" href="cadClientes.php">Cadastra</a></li>
-            <li><a class="dropdown-item" href="#">Algo mais aqui</a></li>
+        
           </ul>
         </li>
 
@@ -84,7 +84,7 @@
             <li><a class="dropdown-item" href="producao.php">Lista Bobinas</a></li>
             <li><a class="dropdown-item" href="cadProducaoBobina.php">Cadastra Bobina</a></li>
             <li><a class="dropdown-item" href="cadProducaoSacola.php">Cadastra Sacola</a></li>
-            <li><a class="dropdown-item" href="#">Algo mais aqui</a></li>
+           
           </ul>
         </li>
 
@@ -95,10 +95,20 @@
           <ul class="dropdown-menu" aria-labelledby="vendasDropdown">
             <li><a class="dropdown-item" href="FormularioVenda.php">Cad Venda</a></li>
             <li><a class="dropdown-item" href="listarVendas.php">Lista Vendas</a></li>
-            <li><a class="dropdown-item" href="#">Algo mais</a></li>
+            
           </ul>
         </li>
         
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="configuracaoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Configurações
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="configuracaoDropdown">
+            <li><a class="dropdown-item" href="gerenciar_usuarios.php">Usuarios</a></li>
+            <li><a class="dropdown-item" href="caixa.php">Caixa</a></li>
+            
+          </ul>
+        </li>
       </ul>
     </div>
   </div>
