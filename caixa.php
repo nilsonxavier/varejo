@@ -1,7 +1,7 @@
 <?php
 require_once 'verifica_login.php';
 require_once 'conexx/config.php';
-
+// teste versoes
 $usuario_id = $_SESSION['usuario_id'];
 
 // Verifica se existe caixa aberto
