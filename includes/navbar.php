@@ -100,10 +100,10 @@
         </li>
         
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="vendasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <a class="nav-link dropdown-toggle" href="#" id="configuracaoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Configurações
           </a>
-          <ul class="dropdown-menu" aria-labelledby="vendasDropdown">
+          <ul class="dropdown-menu" aria-labelledby="configuracaoDropdown">
             <li><a class="dropdown-item" href="gerenciar_usuarios.php">Usuarios</a></li>
             <li><a class="dropdown-item" href="caixa.php">Caixa</a></li>
             
