@@ -90,11 +90,12 @@
 
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="vendasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Vendas
+            Varejo
           </a>
           <ul class="dropdown-menu" aria-labelledby="vendasDropdown">
             <li><a class="dropdown-item" href="FormularioVenda.php">Cad Venda</a></li>
             <li><a class="dropdown-item" href="listarVendas.php">Lista Vendas</a></li>
+            <li><a class="dropdown-item" href="cadastro_materiais.php">Tabela Preços</a></li>
             
           </ul>
         </li>
