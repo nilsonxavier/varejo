@@ -93,8 +93,8 @@
             Varejo
           </a>
           <ul class="dropdown-menu" aria-labelledby="vendasDropdown">
-            <li><a class="dropdown-item" href="FormularioVenda.php">Cad Venda</a></li>
-            <li><a class="dropdown-item" href="listarVendas.php">Lista Vendas</a></li>
+            <li><a class="dropdown-item" href="venda.php">Cad Venda</a></li>
+            <li><a class="dropdown-item" href="historico_vendas.php">Lista Vendas</a></li>
             <li><a class="dropdown-item" href="cadastro_materiais.php">Tabela Preços</a></li>
             <li><a class="dropdown-item" href="cadastro_clientes.php">Clientes</a></li>
             

@@ -1,199 +1,244 @@
 <?php
 require_once 'conexx/config.php';
 
-// Verificar se há caixa aberto
-$caixa_aberto = $conn->query("SELECT id FROM caixas WHERE status = 'aberto' ORDER BY id DESC LIMIT 1")->fetch_assoc();
+// Verificar caixa aberto
+$result = $conn->query("SELECT id FROM caixas WHERE status='aberto' LIMIT 1");
+$caixa_aberto = $result->fetch_assoc();
 if (!$caixa_aberto) {
-    echo "<div style='padding: 20px; color: red; font-weight: bold;'>Nenhum caixa aberto. Abra um caixa para realizar vendas.</div>";
-    exit;
+    die("<div class='alert alert-danger'>Não há caixa aberto. Abra um caixa antes de vender.</div>");
 }
 
-$total_venda = 0;
-$total_pago = 0;
-$total_diferenca = 0;
-$venda_finalizada = false;
+// Clientes
+$clientes = $conn->query("SELECT id, nome, lista_preco_id FROM clientes");
 
-// Buscar materiais e preços de antemão (para o JS)
-$precos_materiais = [];
-$result_materiais = $conn->query("SELECT mp.material_id, m.nome, mp.preco FROM precos_materiais mp 
-JOIN materiais m ON mp.material_id = m.id 
-WHERE mp.precos_materiais_id = (SELECT id FROM listas_precos WHERE nome='padrão' LIMIT 1)");
-while ($row = $result_materiais->fetch_assoc()) {
-    $precos_materiais[$row['material_id']] = [
-        'nome' => $row['nome'],
-        'preco' => floatval($row['preco'])
-    ];
+// Listas de Preços
+$listas_precos = $conn->query("SELECT id, nome FROM listas_precos");
+
+// Materiais
+$materiais = $conn->query("SELECT id, nome FROM materiais");
+
+// Preços por Lista
+$precos = [];
+$listas_precos->data_seek(0);
+while ($l = $listas_precos->fetch_assoc()) {
+    $lista_id = $l['id'];
+    $precos[$lista_id] = [];
+    $res = $conn->query("SELECT material_id, preco FROM precos_materiais WHERE lista_id = $lista_id");
+    while ($p = $res->fetch_assoc()) {
+        $precos[$lista_id][$p['material_id']] = $p['preco'];
+    }
 }
 
-// Processar a venda
-if (isset($_POST['finalizar_venda'])) {
-    $cliente_id = isset($_POST['cliente_id']) ? intval($_POST['cliente_id']) : null;
-    $materiais = $_POST['materiais'];
-    $quantidades = $_POST['quantidades'];
-    $pagamentos = $_POST['pagamentos'];
-
-    // Calcular total da venda
-    foreach ($materiais as $index => $material_id) {
-        $qtd = floatval($quantidades[$index]);
-
-        // Buscar preço do material conforme lista de preço
-        if ($cliente_id) {
-            $cliente = $conn->query("SELECT precos_materiais_id FROM clientes WHERE id = $cliente_id")->fetch_assoc();
-            $precos_materiais_id = $cliente['precos_materiais_id'] ?: "(SELECT id FROM listas_precos WHERE nome='padrão' LIMIT 1)";
-        } else {
-            $precos_materiais_id = "(SELECT id FROM listas_precos WHERE nome='padrão' LIMIT 1)";
-        }
-
-        $preco_result = $conn->query("SELECT preco FROM precos_materiais WHERE material_id = $material_id AND precos_materiais_id = $precos_materiais_id LIMIT 1");
-        $preco_row = $preco_result->fetch_assoc();
-        $preco = $preco_row ? floatval($preco_row['preco']) : 0;
-
-        $total_venda += $preco * $qtd;
-    }
-
-    // Total pago
-    foreach ($pagamentos as $forma => $valor) {
-        $valor = floatval($valor);
-        if ($valor > 0) {
-            $total_pago += $valor;
-
-            // Registrar em caixa se for dinheiro
-            if (strtolower($forma) == 'dinheiro') {
-                $stmt = $conn->prepare("INSERT INTO caixa_movimentos (caixa_id, tipo, valor, descricao) VALUES (?, 'entrada', ?, 'Venda - pagamento em dinheiro')");
-                $stmt->bind_param("id", $caixa_aberto['id'], $valor);
-                $stmt->execute();
-            }
-        }
-    }
-
-    $total_diferenca = $total_pago - $total_venda;
-
-    // Atualizar saldo cliente
-    if ($cliente_id && $total_diferenca != 0) {
-        $conn->query("UPDATE clientes SET saldo = saldo + $total_diferenca WHERE id = $cliente_id");
-    }
-
-    $venda_finalizada = true;
-}
-
-// Buscar clientes
-$clientes = $conn->query("SELECT id, nome FROM clientes ORDER BY nome");
-
-// Buscar materiais (para o formulário)
-$materiais = $conn->query("SELECT id, nome FROM materiais ORDER BY nome");
-
-// Formas de pagamento
-$formas_pagamento = ['dinheiro', 'pix', 'cartao', 'outros'];
+include __DIR__.'/includes/header.php';
+include __DIR__.'/includes/navbar.php';
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Vendas - PDV</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Nova Venda - PDV</title>
     <style>
-        body { background-color: #f8f9fa; }
-        .card { border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
-        .form-control, .form-select { border-radius: 8px; }
+        .section-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        h2, h3 {
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+        .btn-primary, .btn-success, .btn-danger, .btn-outline-secondary {
+            border-radius: 8px;
+        }
+        .list-group-item {
+            border-radius: 8px;
+        }
     </style>
+    <script>
+    var precos = <?php echo json_encode($precos); ?>;
+
+    function carregarListaPreco() {
+        var clienteId = document.getElementById('cliente').value;
+        var listaPreco = document.getElementById('lista_preco');
+
+        <?php
+        $clientes->data_seek(0);
+        while ($c = $clientes->fetch_assoc()) {
+            echo "if(clienteId == '{$c['id']}') { listaPreco.value = '{$c['lista_preco_id']}'; }\n";
+        }
+        ?>
+        calcularTotal();
+    }
+
+    function adicionarItem() {
+        var container = document.getElementById('itens');
+        var item = container.children[0].cloneNode(true);
+        item.querySelectorAll('input').forEach(input => input.value = '');
+        container.appendChild(item);
+        calcularTotal();
+    }
+
+    function removerItem(btn) {
+        var item = btn.parentElement.parentElement;
+        if (document.getElementById('itens').children.length > 1) {
+            item.remove();
+            calcularTotal();
+        }
+    }
+
+    function calcularTotal() {
+        var lista_id = document.getElementById('lista_preco').value;
+        var total = 0;
+
+        document.querySelectorAll('#itens > div').forEach(function(itemDiv) {
+            var material_id = itemDiv.querySelector('select').value;
+            var quantidade = parseFloat(itemDiv.querySelector('input').value) || 0;
+            var preco = 0;
+
+            if (precos[lista_id] && precos[lista_id][material_id]) {
+                preco = parseFloat(precos[lista_id][material_id]);
+            }
+
+            total += quantidade * preco;
+        });
+
+        document.getElementById('total_venda').innerText = total.toFixed(2);
+    }
+
+    function toggleCamposPagamento() {
+        document.getElementById('campo_dinheiro').style.display = document.getElementById('dinheiro').checked ? 'block' : 'none';
+        document.getElementById('campo_pix').style.display = document.getElementById('pix').checked ? 'block' : 'none';
+        document.getElementById('campo_cartao').style.display = document.getElementById('cartao').checked ? 'block' : 'none';
+    }
+
+    document.addEventListener('change', function(e) {
+        if (e.target.matches('#lista_preco, select[name="material_id[]"], input[name="quantidade[]"], input[type="checkbox"]')) {
+            calcularTotal();
+            toggleCamposPagamento();
+        }
+    });
+
+    document.addEventListener('input', function(e) {
+        if (e.target.matches('input[name="quantidade[]"]')) {
+            calcularTotal();
+        }
+    });
+
+    window.onload = function() {
+        toggleCamposPagamento();
+    };
+    </script>
 </head>
 <body>
+
 <div class="container py-4">
-    <h2><i class="bi bi-cart-plus"></i> Nova Venda</h2>
 
-    <?php if ($venda_finalizada): ?>
-        <div class="alert alert-success">
-            <strong>Venda realizada com sucesso!</strong><br>
-            <strong>Total da Venda:</strong> R$ <?= number_format($total_venda, 2, ',', '.') ?><br>
-            <strong>Total Pago:</strong> R$ <?= number_format($total_pago, 2, ',', '.') ?><br>
-            <strongDiferença:</strong> R$ <?= number_format($total_diferenca, 2, ',', '.') ?>
-        </div>
-    <?php endif; ?>
+    <div class="section-card">
+        <h2><i class="bi bi-cart-plus"></i> Nova Venda</h2>
 
-    <form method="post">
-        <!-- Cliente -->
-        <div class="mb-3">
-            <label>Cliente (Opcional):</label>
-            <select name="cliente_id" class="form-select">
-                <option value="">Venda sem cliente</option>
-                <?php while ($cli = $clientes->fetch_assoc()) {
-                    echo "<option value='{$cli['id']}'>{$cli['nome']}</option>";
-                } ?>
-            </select>
-        </div>
+        <form method="POST" action="salvar_venda.php">
 
-        <!-- Itens -->
-        <div class="card p-3 mb-3">
+            <!-- Cliente -->
+            <div class="mb-3">
+                <label><strong>Cliente (opcional):</strong></label>
+                <select name="cliente_id" id="cliente" class="form-select" onchange="carregarListaPreco()">
+                    <option value="">-- Sem cliente --</option>
+                    <?php
+                    $clientes->data_seek(0);
+                    while ($c = $clientes->fetch_assoc()) {
+                        echo "<option value='{$c['id']}'>{$c['nome']}</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+
+            <!-- Lista de Preços -->
+            <div class="mb-3">
+                <label><strong>Lista de Preços:</strong></label>
+                <select name="lista_preco_id" id="lista_preco" class="form-select" onchange="calcularTotal()">
+                    <?php
+                    $listas_precos->data_seek(0);
+                    while ($l = $listas_precos->fetch_assoc()) {
+                        echo "<option value='{$l['id']}'>{$l['nome']}</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+
+            <!-- Itens da Venda -->
             <h5>Itens da Venda:</h5>
-            <div id="itens-venda">
-                <div class="row mb-2 item-venda">
-                    <div class="col-md-6">
-                        <select name="materiais[]" class="form-select" onchange="calcularTotal()" required>
-                            <option value="">Selecione o Material</option>
+            <div id="itens">
+                <div class="row g-2 mb-2">
+                    <div class="col-md-5">
+                        <select name="material_id[]" class="form-select" required>
                             <?php
-                            $materiais2 = $conn->query("SELECT id, nome FROM materiais ORDER BY nome");
-                            while ($m = $materiais2->fetch_assoc()) {
+                            $materiais->data_seek(0);
+                            while ($m = $materiais->fetch_assoc()) {
                                 echo "<option value='{$m['id']}'>{$m['nome']}</option>";
                             }
                             ?>
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <input type="number" name="quantidades[]" step="0.01" placeholder="Quantidade" class="form-control" oninput="calcularTotal()" required>
+                        <input type="number" step="0.01" name="quantidade[]" class="form-control" placeholder="Quantidade" required>
                     </div>
-                    <div class="col-md-2">
-                        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove(); calcularTotal();">Remover</button>
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerItem(this)">
+                            <i class="bi bi-trash"></i> Remover
+                        </button>
                     </div>
                 </div>
             </div>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="adicionarItem()">Adicionar Item</button>
-        </div>
+            <button type="button" onclick="adicionarItem()" class="btn btn-outline-secondary mb-3">
+                <i class="bi bi-plus-circle"></i> Adicionar Item
+            </button>
 
-        <!-- Total Atual -->
-        <div class="alert alert-info">
-            <strong>Total Parcial da Venda:</strong> R$ <span id="total-venda">0,00</span>
-        </div>
+            <!-- Formas de Pagamento -->
+            <h5>Formas de Pagamento:</h5>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="formas_pagamento[]" value="dinheiro" id="dinheiro">
+                <label class="form-check-label" for="dinheiro">Dinheiro</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="formas_pagamento[]" value="pix" id="pix">
+                <label class="form-check-label" for="pix">Pix</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="formas_pagamento[]" value="cartao" id="cartao">
+                <label class="form-check-label" for="cartao">Cartão</label>
+            </div>
 
-        <!-- Formas de Pagamento -->
-        <div class="card p-3 mb-3">
-            <h5>Pagamento:</h5>
-            <?php foreach ($formas_pagamento as $forma) { ?>
-                <div class="mb-2">
-                    <label><?= ucfirst($forma) ?>:</label>
-                    <input type="number" step="0.01" name="pagamentos[<?= $forma ?>]" class="form-control" placeholder="R$ 0,00">
-                </div>
-            <?php } ?>
-        </div>
+            <div class="mt-3" id="campo_dinheiro" style="display:none;">
+                <label><strong>Valor em Dinheiro:</strong></label>
+                <input type="number" step="0.01" name="valor_dinheiro" class="form-control" placeholder="Ex: 100.00">
+            </div>
 
-        <button type="submit" name="finalizar_venda" class="btn btn-success"><i class="bi bi-check-circle"></i> Finalizar Venda</button>
-    </form>
+            <div class="mt-3" id="campo_pix" style="display:none;">
+                <label><strong>Valor em Pix:</strong></label>
+                <input type="number" step="0.01" name="valor_pix" class="form-control" placeholder="Ex: 100.00">
+            </div>
+
+            <div class="mt-3" id="campo_cartao" style="display:none;">
+                <label><strong>Valor em Cartão:</strong></label>
+                <input type="number" step="0.01" name="valor_cartao" class="form-control" placeholder="Ex: 100.00">
+            </div>
+
+            <!-- Total -->
+            <div class="mt-4">
+                <h4>Total da Venda: R$ <span id="total_venda">0.00</span></h4>
+            </div>
+
+            <button type="submit" class="btn btn-success mt-3">
+                <i class="bi bi-check-circle"></i> Finalizar Venda
+            </button>
+        </form>
+    </div>
+
 </div>
 
-<script>
-// Preços vindos do PHP (preço padrão)
-const precosMateriais = <?= json_encode(array_map(function($m){ return $m['preco']; }, $precos_materiais)) ?>;
-
-function calcularTotal() {
-    let total = 0;
-    document.querySelectorAll('#itens-venda .item-venda').forEach(function(item) {
-        const material = item.querySelector('select').value;
-        const qtd = parseFloat(item.querySelector('input').value) || 0;
-        const preco = precosMateriais[material] || 0;
-        total += preco * qtd;
-    });
-    document.getElementById('total-venda').innerText = total.toFixed(2).replace('.', ',');
-}
-
-function adicionarItem() {
-    const container = document.getElementById('itens-venda');
-    const item = container.firstElementChild.cloneNode(true);
-    item.querySelectorAll('input').forEach(e => e.value = '');
-    item.querySelector('select').value = '';
-    container.appendChild(item);
-}
-</script>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<?php include __DIR__.'/includes/footer.php'; ?>
 </body>
 </html>
