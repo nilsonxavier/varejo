@@ -62,12 +62,17 @@ include __DIR__.'/includes/footer.php';
             border-radius: 8px;
             padding: 10px 20px;
         }
-        .btn-outline-danger {
+        .btn-outline-danger, .btn-outline-primary {
             border-radius: 6px;
             transition: all 0.2s ease;
+            margin-left: 5px;
         }
         .btn-outline-danger:hover {
             background-color: #dc3545;
+            color: white;
+        }
+        .btn-outline-primary:hover {
+            background-color: #0d6efd;
             color: white;
         }
         .list-group-item {
@@ -149,7 +154,7 @@ include __DIR__.'/includes/footer.php';
             echo "<ul class='list-group'>";
             while ($c = $clientes->fetch_assoc()) {
                 echo "<li class='list-group-item'>
-                        <div class='d-flex justify-content-between align-items-center'>
+                        <div class='d-flex justify-content-between align-items-start'>
                             <div>
                                 <strong>{$c['nome']}</strong> | CPF: {$c['cpf']}
                                 <div class='cliente-info-grid mt-2'>
@@ -158,9 +163,13 @@ include __DIR__.'/includes/footer.php';
                                     <small>Endereço: {$c['endereco']}</small>
                                     <small>CEP: {$c['cep']}</small>
                                     <small>Lista: ".($c['lista_nome'] ?: 'Nenhuma')."</small>
+                                    <small>Saldo: R$ ".number_format($c['saldo'], 2, ',', '.')."</small>
                                 </div>
                             </div>
-                            <div>
+                            <div class='mt-2'>
+                                <a href='editar_cliente.php?id={$c['id']}' class='btn btn-sm btn-outline-primary'>
+                                    <i class='bi bi-pencil'></i> Editar
+                                </a>
                                 <a href='cadastro_clientes.php?excluir_cliente={$c['id']}' class='btn btn-sm btn-outline-danger' onclick=\"return confirm('Tem certeza que deseja excluir este cliente?')\">
                                     <i class='bi bi-trash'></i> Excluir
                                 </a>
