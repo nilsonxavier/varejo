@@ -4,6 +4,8 @@ require_once '../conexx/config.php';
 $termo = $_GET['q'] ?? '';
 $clientes = [];
 
+
+// retorna nome cliente e lista de preços
 if ($termo !== '') {
     $sql = "
     SELECT c.id, c.nome, c.lista_preco_id, lp.nome AS listas_precos_nome
