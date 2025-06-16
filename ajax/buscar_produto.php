@@ -1,18 +1,15 @@
-
-
 <?php
 require_once '../conexx/config.php';
 
-//$busca = $_GET['busca'] ?? '';
 $termo = $_GET['termo'] ?? '';
-$idCliente = $_GET['idCliente'] ?? 0;
+$idCliente = $_GET['cliente_id'] ?? 0;
+
 if (strlen($termo) < 2) {
     echo json_encode([]);
     exit;
 }
 
-
-// 1. Buscar qual tabela de preços o cliente usa
+// Buscar qual tabela de preços o cliente usa
 $query = "SELECT tabela_preco_id FROM clientes WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $idCliente);
@@ -27,7 +24,7 @@ if (!$tabelaId) {
     $tabelaId = 1;
 }
 
-// 2. Buscar produtos com o preço da tabela do cliente
+// Buscar produtos com o preço da tabela do cliente
 $query = "
     SELECT p.id, p.nome, 
         COALESCE(tp.preco, p.preco) AS preco
@@ -51,6 +48,3 @@ while ($row = $result->fetch_assoc()) {
 
 header('Content-Type: application/json');
 echo json_encode($produtos);
-
-
-

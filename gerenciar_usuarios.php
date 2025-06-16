@@ -8,17 +8,21 @@ if ($_SESSION['usuario_tipo'] !== 'admin') {
     exit;
 }
 
+// Buscar empresas para o select
+$empresas = $conn->query("SELECT id, nome_fantasia FROM empresas ORDER BY nome_fantasia ASC");
+
 // Processamento
 if (isset($_POST['atualizar'])) {
     $id = intval($_POST['id']);
     $nome = trim($_POST['nome']);
     $email = trim($_POST['email']);
     $tipo = $_POST['tipo'];
+    $empresa_id = intval($_POST['empresa_id']);
 
     if (!empty($nome) && !empty($email)) {
-        $query = "UPDATE usuarios SET nome=?, email=?, tipo=?";
-        $params = [$nome, $email, $tipo];
-        $types = "sss";
+        $query = "UPDATE usuarios SET nome=?, email=?, tipo=?, empresa_id=?";
+        $params = [$nome, $email, $tipo, $empresa_id];
+        $types = "sssi";
 
         if (!empty($_POST['senha'])) {
             $senha = password_hash(trim($_POST['senha']), PASSWORD_DEFAULT);
@@ -44,10 +48,11 @@ if (isset($_POST['adicionar'])) {
     $email = trim($_POST['email']);
     $senha = password_hash(trim($_POST['senha']), PASSWORD_DEFAULT);
     $tipo = $_POST['tipo'];
+    $empresa_id = intval($_POST['empresa_id']);
 
     if (!empty($nome) && !empty($email) && !empty($_POST['senha'])) {
-        $stmt = $conn->prepare("INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $nome, $email, $senha, $tipo);
+        $stmt = $conn->prepare("INSERT INTO usuarios (nome, email, senha, tipo, empresa_id) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssi", $nome, $email, $senha, $tipo, $empresa_id);
         $stmt->execute();
     }
     header("Location: gerenciar_usuarios.php?msg=adicionado");
@@ -77,7 +82,7 @@ if (isset($_GET['editar'])) {
 }
 
 // Lista
-$usuarios = $conn->query("SELECT * FROM usuarios ORDER BY id DESC");
+$usuarios = $conn->query("SELECT usuarios.*, empresas.nome_fantasia AS empresa_nome_fantasia FROM usuarios LEFT JOIN empresas ON usuarios.empresa_id = empresas.id ORDER BY usuarios.id DESC");
 
 // UI
 include __DIR__.'/includes/header.php';
@@ -106,10 +111,10 @@ include __DIR__.'/includes/navbar.php';
             <input type="hidden" name="id" value="<?= $editar_usuario['id'] ?>">
         <?php endif; ?>
 
-        <div class="col-md-3">
+        <div class="col-md-2">
             <input type="text" name="nome" class="form-control" placeholder="Nome" required value="<?= htmlspecialchars($editar_usuario['nome'] ?? '') ?>">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <input type="email" name="email" class="form-control" placeholder="E-mail" required value="<?= htmlspecialchars($editar_usuario['email'] ?? '') ?>">
         </div>
         <div class="col-md-2">
@@ -120,6 +125,16 @@ include __DIR__.'/includes/navbar.php';
                 <option value="admin" <?= ($editar_usuario['tipo'] ?? '') === 'admin' ? 'selected' : '' ?>>Administrador</option>
                 <option value="vendedor" <?= ($editar_usuario['tipo'] ?? '') === 'vendedor' ? 'selected' : '' ?>>Vendedor</option>
                 <option value="estoquista" <?= ($editar_usuario['tipo'] ?? '') === 'estoquista' ? 'selected' : '' ?>>Estoquista</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="empresa_id" class="form-select" required>
+                <option value="">Selecione a empresa</option>
+                <?php while ($empresa = $empresas->fetch_assoc()): ?>
+                    <option value="<?= $empresa['id'] ?>" <?= ($editar_usuario['empresa_id'] ?? '') == $empresa['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($empresa['nome_fantasia']) ?>
+                    </option>
+                <?php endwhile; ?>
             </select>
         </div>
         <div class="col-md-2">
@@ -137,6 +152,7 @@ include __DIR__.'/includes/navbar.php';
                     <th>Nome</th>
                     <th>Email</th>
                     <th>Tipo</th>
+                    <th>Empresa</th>
                     <th class="text-end">Ações</th>
                 </tr>
             </thead>
@@ -151,6 +167,7 @@ include __DIR__.'/includes/navbar.php';
                                 <?= ucfirst($user['tipo']) ?>
                             </span>
                         </td>
+                        <td><?= htmlspecialchars($user['empresa_nome_fantasia'] ?? '-') ?></td>
                         <td class="text-end">
                             <?php if ($user['id'] !== $_SESSION['usuario_id']): ?>
                                 <a href="gerenciar_usuarios.php?editar=<?= $user['id'] ?>" class="btn btn-warning btn-sm">
