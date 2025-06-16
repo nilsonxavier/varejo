@@ -1,5 +1,7 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<?php
+include __DIR__.'/includes/header.php';
+include __DIR__.'/includes/navbar.php';
+?>
 
 <head>
     <meta charset="UTF-8">
@@ -50,13 +52,6 @@
                 <div class="section-card">
                     <h4><i class="bi bi-cart-plus"></i> PDV de Compra</h4>
                     <form id="form-compra">
-                        <!-- Lista de Preços -->
-                        <div class="mb-3">
-                            <label class="form-label">Lista de Preços:</label>
-                            <select id="lista_preco" class="form-select">
-                                <option value="1">Padrão</option>
-                            </select>
-                        </div>
 
                         <!-- Itens -->
                         <h5>Itens:</h5>
@@ -252,11 +247,12 @@ document.getElementById('busca-cliente').addEventListener('input', function() {
                 li.className = 'list-group-item list-group-item-action';
                 li.setAttribute('tabindex', '0');
                 li.textContent = cliente.nome;
+                const listaPrecos = cliente.listas_precos_nome || 'Nenhuma lista';
 
                 li.addEventListener('click', () => {
                     clienteSelecionado = cliente;
                     document.getElementById('cliente-selecionado').textContent = cliente.nome;
-                    document.getElementById('tabela-selecionada').textContent = cliente.listas_precos_nome;
+                    document.getElementById('tabela-selecionada').textContent = listaPrecos;
                     bootstrap.Modal.getInstance(document.getElementById('modalSelecionarCliente')).hide();
                 });
 
@@ -283,7 +279,6 @@ document.getElementById('busca-cliente').addEventListener('input', function() {
 });
 
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    
 
-</html>
+    <?php include __DIR__.'/includes/footer.php'; ?>

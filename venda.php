@@ -37,12 +37,8 @@ include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
 
-<head>
-    <meta charset="UTF-8">
-    <title>Nova Venda - PDV</title>
+    <title>COMPRAS - PDV</title>
     <style>
     .section-card {
         background-color: #ffffff;
@@ -311,10 +307,5 @@ include __DIR__.'/includes/navbar.php';
         </script>
 
 
-    </div>
-
 
     <?php include __DIR__.'/includes/footer.php'; ?>
-</body>
-
-</html>
