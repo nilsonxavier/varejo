@@ -1,48 +1,11 @@
-<?php
-require_once 'conexx/config.php';
-
-// Verificar caixa aberto
-$result = $conn->query("SELECT id FROM caixas WHERE status='aberto' LIMIT 1");
-$caixa_aberto = $result->fetch_assoc();
-
-?>
-<script>
-var caixaAberto = <?= $caixa_aberto ? 'true' : 'false' ?>;
-</script>
-
-<?php
-
-// Clientes
-$clientes = $conn->query("SELECT id, nome, lista_preco_id FROM clientes");
-
-// Listas de Preços
-$listas_precos = $conn->query("SELECT id, nome FROM listas_precos");
-
-// Materiais
-$materiais = $conn->query("SELECT id, nome FROM materiais");
-
-// Preços por Lista
-$precos = [];
-$listas_precos->data_seek(0);
-while ($l = $listas_precos->fetch_assoc()) {
-    $lista_id = $l['id'];
-    $precos[$lista_id] = [];
-    $res = $conn->query("SELECT material_id, preco FROM precos_materiais WHERE lista_id = $lista_id");
-    while ($p = $res->fetch_assoc()) {
-        $precos[$lista_id][$p['material_id']] = $p['preco'];
-    }
-}
-
-include __DIR__.'/includes/header.php';
-include __DIR__.'/includes/navbar.php';
-?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
-    <title>Nova Venda - PDV</title>
+    <title>Compra - PDV</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <style>
     .section-card {
         background-color: #ffffff;
@@ -52,267 +15,275 @@ include __DIR__.'/includes/navbar.php';
         margin-bottom: 30px;
     }
 
-    h2,
-    h3 {
-        margin-bottom: 20px;
-        color: #343a40;
+    .footer-icons {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        padding: 10px 0;
+        display: flex;
+        justify-content: space-around;
+        z-index: 1050;
     }
 
-    .btn-primary,
-    .btn-success,
-    .btn-danger,
-    .btn-outline-secondary {
-        border-radius: 8px;
+    .footer-icons .icon {
+        text-align: center;
+        font-size: 1.2rem;
+        color: #495057;
+        cursor: pointer;
     }
 
-    .list-group-item {
-        border-radius: 8px;
+    .footer-icons .icon i {
+        display: block;
+        font-size: 1.5rem;
     }
     </style>
-    <script>
-    var precos = <?php echo json_encode($precos); ?>;
-
-    function carregarListaPreco() {
-        var clienteId = document.getElementById('cliente').value;
-        var listaPreco = document.getElementById('lista_preco');
-
-        <?php
-        $clientes->data_seek(0);
-        while ($c = $clientes->fetch_assoc()) {
-            echo "if(clienteId == '{$c['id']}') { listaPreco.value = '{$c['lista_preco_id']}'; }\n";
-        }
-        ?>
-        calcularTotal();
-    }
-
-    function adicionarItem() {
-        var container = document.getElementById('itens');
-        var item = container.children[0].cloneNode(true);
-        item.querySelectorAll('input').forEach(input => input.value = '');
-        container.appendChild(item);
-        calcularTotal();
-    }
-
-    function removerItem(btn) {
-        var item = btn.parentElement.parentElement;
-        if (document.getElementById('itens').children.length > 1) {
-            item.remove();
-            calcularTotal();
-        }
-    }
-
-    function calcularTotal() {
-        var lista_id = document.getElementById('lista_preco').value;
-        var total = 0;
-
-        document.querySelectorAll('#itens > div').forEach(function(itemDiv) {
-            var material_id = itemDiv.querySelector('select').value;
-            var quantidade = parseFloat(itemDiv.querySelector('input').value) || 0;
-            var preco = 0;
-
-            if (precos[lista_id] && precos[lista_id][material_id]) {
-                preco = parseFloat(precos[lista_id][material_id]);
-            }
-
-            total += quantidade * preco;
-        });
-
-        document.getElementById('total_venda').innerText = total.toFixed(2);
-    }
-
-    function toggleCamposPagamento() {
-        document.getElementById('campo_dinheiro').style.display = document.getElementById('dinheiro').checked ?
-            'block' : 'none';
-        document.getElementById('campo_pix').style.display = document.getElementById('pix').checked ? 'block' : 'none';
-        document.getElementById('campo_cartao').style.display = document.getElementById('cartao').checked ? 'block' :
-            'none';
-    }
-
-    document.addEventListener('change', function(e) {
-        if (e.target.matches(
-                '#lista_preco, select[name="material_id[]"], input[name="quantidade[]"], input[type="checkbox"]'
-            )) {
-            calcularTotal();
-            toggleCamposPagamento();
-        }
-    });
-
-    document.addEventListener('input', function(e) {
-        if (e.target.matches('input[name="quantidade[]"]')) {
-            calcularTotal();
-        }
-    });
-
-    window.onload = function() {
-        toggleCamposPagamento();
-    };
-    </script>
 </head>
 
 <body>
-    <!-- MODAL ABERTURA CAIXA -->
-    <div class="modal fade" id="modalCaixaFechado" tabindex="-1" aria-labelledby="modalCaixaFechadoLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Caixa Fechado</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+    <div class="container py-4">
+        <div class="row g-4">
+            <!-- Coluna do Formulário -->
+            <div class="col-md-6">
+                <div class="section-card">
+                    <h4><i class="bi bi-cart-plus"></i> PDV de Compra</h4>
+                    <form id="form-compra">
+                        <!-- Lista de Preços -->
+                        <div class="mb-3">
+                            <label class="form-label">Lista de Preços:</label>
+                            <select id="lista_preco" class="form-select">
+                                <option value="1">Padrão</option>
+                            </select>
+                        </div>
+
+                        <!-- Itens -->
+                        <h5>Itens:</h5>
+                        <div id="itens">
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <select class="form-select" name="material_id[]">
+                                        <option value="1">Material A</option>
+                                        <option value="2">Material B</option>
+                                    </select>
+                                </div>
+                                <div class="col-4">
+                                    <input type="number" class="form-control" name="quantidade[]" placeholder="Qtd">
+                                </div>
+                                <div class="col-2">
+                                    <button type="button" class="btn btn-outline-danger" onclick="removerItem(this)"><i
+                                            class="bi bi-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-secondary" onclick="adicionarItem()">
+                            <i class="bi bi-plus-circle"></i> Adicionar Item
+                        </button>
+                    </form>
                 </div>
-                <div class="modal-body">
-                    O caixa está fechado. Deseja abrir agora?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="btnCancelar">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="btnAbrirCaixa">Abrir Caixa</button>
+            </div>
+
+            <!-- Coluna do Carrinho -->
+            <div class="col-md-6">
+                <div class="section-card">
+                    <h4><i class="bi bi-basket"></i> Itens no Carrinho</h4>
+                    <div class="mb-2">
+                        <strong>Cliente Selecionado: </strong><span id="cliente-selecionado">Nenhum</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Tabela Selecionada: </strong><span id="tabela-selecionada">Nenhum</span>
+                    </div>
+                    <ul class="list-group" id="lista-carrinho"></ul>
+                    <div class="mt-3">
+                        <strong>Total: R$ <span id="total-carrinho">0.00</span></strong>
+                    </div>
+                    <button onclick="limparCarrinho()" class="btn btn-sm btn-outline-danger mt-2">Limpar
+                        Carrinho</button>
                 </div>
             </div>
         </div>
     </div>
-    <!-- fim Modal para abrir caixa -->
 
-
-
-    <div class="section-card">
-        <h2><i class="bi bi-cart-plus"></i> Nova Venda</h2>
-
-        <form method="POST" action="salvar_venda.php">
-
-            <!-- Cliente -->
-            <div class="mb-3">
-                <label><strong>Cliente (opcional):</strong></label>
-                <select name="cliente_id" id="cliente" class="form-select" onchange="carregarListaPreco()">
-                    <option value="">-- Sem cliente --</option>
-                    <?php
-                    $clientes->data_seek(0);
-                    while ($c = $clientes->fetch_assoc()) {
-                        echo "<option value='{$c['id']}'>{$c['nome']}</option>";
-                    }
-                    ?>
-                </select>
-            </div>
-
-            <!-- Lista de Preços -->
-            <div class="mb-3">
-                <label><strong>Lista de Preços:</strong></label>
-                <select name="lista_preco_id" id="lista_preco" class="form-select" onchange="calcularTotal()">
-                    <?php
-                    $listas_precos->data_seek(0);
-                    while ($l = $listas_precos->fetch_assoc()) {
-                        echo "<option value='{$l['id']}'>{$l['nome']}</option>";
-                    }
-                    ?>
-                </select>
-            </div>
-
-            <!-- Itens da Venda -->
-            <h5>Itens da Venda:</h5>
-            <div id="itens">
-                <div class="row g-2 mb-2">
-                    <div class="col-md-5">
-                        <select name="material_id[]" class="form-select" required>
-                            <?php
-                            $materiais->data_seek(0);
-                            while ($m = $materiais->fetch_assoc()) {
-                                echo "<option value='{$m['id']}'>{$m['nome']}</option>";
-                            }
-                            ?>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="number" step="0.01" name="quantidade[]" class="form-control"
-                            placeholder="Quantidade" required>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerItem(this)">
-                            <i class="bi bi-trash"></i> Remover
-                        </button>
-                    </div>
+    <!-- Modal Selecionar Cliente -->
+    <div class="modal fade" id="modalSelecionarCliente" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Selecionar Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control mb-3" id="busca-cliente"
+                        placeholder="Digite o nome do cliente">
+                    <ul class="list-group" id="resultado-clientes"></ul>
                 </div>
             </div>
-            <button type="button" onclick="adicionarItem()" class="btn btn-outline-secondary mb-3">
-                <i class="bi bi-plus-circle"></i> Adicionar Item
-            </button>
-
-            <!-- Formas de Pagamento -->
-            <h5>Formas de Pagamento:</h5>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="formas_pagamento[]" value="dinheiro"
-                    id="dinheiro">
-                <label class="form-check-label" for="dinheiro">Dinheiro</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="formas_pagamento[]" value="pix" id="pix">
-                <label class="form-check-label" for="pix">Pix</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="formas_pagamento[]" value="cartao" id="cartao">
-                <label class="form-check-label" for="cartao">Cartão</label>
-            </div>
-
-            <div class="mt-3" id="campo_dinheiro" style="display:none;">
-                <label><strong>Valor em Dinheiro:</strong></label>
-                <input type="number" step="0.01" name="valor_dinheiro" class="form-control" placeholder="Ex: 100.00">
-            </div>
-
-            <div class="mt-3" id="campo_pix" style="display:none;">
-                <label><strong>Valor em Pix:</strong></label>
-                <input type="number" step="0.01" name="valor_pix" class="form-control" placeholder="Ex: 100.00">
-            </div>
-
-            <div class="mt-3" id="campo_cartao" style="display:none;">
-                <label><strong>Valor em Cartão:</strong></label>
-                <input type="number" step="0.01" name="valor_cartao" class="form-control" placeholder="Ex: 100.00">
-            </div>
-
-            <!-- Total -->
-            <div class="mt-4">
-                <h4>Total da Venda: R$ <span id="total_venda">0.00</span></h4>
-            </div>
-
-            <button type="submit" class="btn btn-success mt-3">
-                <i class="bi bi-check-circle"></i> Finalizar Venda
-            </button>
-        </form>
+        </div>
     </div>
+
+    <!-- Ícones fixos no rodapé -->
+    <div class="footer-icons">
+        <div class="icon"><i class="bi bi-house-door"></i><small>Início</small></div>
+        <div class="icon"><i class="bi bi-bag-plus"></i><small>Nova Compra</small></div>
+        <div class="icon"><i class="bi bi-clock-history"></i><small>Histórico</small></div>
+        <div class="icon" onclick="abrirModalCliente()"><i class="bi bi-person-plus"></i><small>Cliente+</small></div>
+    </div>
+
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var caixaAberto = <?php echo $caixa_aberto ? 'true' : 'false'; ?>;
-
-        if (!caixaAberto) {
-            var modalElement = document.getElementById('modalCaixaFechado');
-            var modalCaixa = new bootstrap.Modal(modalElement, {
-                backdrop: 'static', // impede clique fora
-                keyboard: false // impede fechar com ESC
-            });
-
-            modalCaixa.show();
-
-            // Botão abrir caixa
-            document.getElementById('btnAbrirCaixa').addEventListener('click', function() {
-                window.location.href = 'caixa.php';
-            });
-
-            // Botão cancelar
-            document.getElementById('btnCancelar').addEventListener('click', function() {
-                window.location.href = 'index.php';
-            });
-
-            // Qualquer fechamento (inclusive X ou código)
-            modalElement.addEventListener('hidden.bs.modal', function() {
-                window.location.href = 'index.php';
-            });
+    const caixaAberto = false;
+    const precos = {
+        1: {
+            1: 10.00,
+            2: 20.00
         }
+    };
+
+    let clienteSelecionado = null;
+
+    function abrirModalCliente() {
+        const modal = new bootstrap.Modal(document.getElementById('modalSelecionarCliente'));
+        document.getElementById('busca-cliente').value = '';
+        document.getElementById('resultado-clientes').innerHTML = '';
+        modal.show();
+    }
+
+    function adicionarItem() {
+        const container = document.getElementById('itens');
+        const modelo = container.children[0].cloneNode(true);
+        modelo.querySelectorAll('input').forEach(input => input.value = '');
+        container.appendChild(modelo);
+    }
+
+    function removerItem(btn) {
+        const row = btn.closest('.row');
+        const container = document.getElementById('itens');
+        if (container.children.length > 1) row.remove();
+        salvarCarrinho();
+    }
+
+    function salvarCarrinho() {
+        const lista_id = document.getElementById('lista_preco').value;
+        const itens = [];
+        document.querySelectorAll('#itens .row').forEach(row => {
+            const sel = row.querySelector('select');
+            const id = sel.value;
+            const nome = sel.options[sel.selectedIndex].text;
+            const qtd = parseFloat(row.querySelector('input').value) || 0;
+            itens.push({
+                material_id: id,
+                material_nome: nome,
+                quantidade: qtd
+            });
+        });
+        localStorage.setItem('carrinho_compra', JSON.stringify(itens));
+    }
+
+    function carregarCarrinho() {
+        const lista = document.getElementById('lista-carrinho');
+        const lista_id = document.getElementById('lista_preco').value;
+        const dados = JSON.parse(localStorage.getItem('carrinho_compra') || '[]');
+        let total = 0;
+        lista.innerHTML = '';
+        dados.forEach(item => {
+            const preco = precos[lista_id]?. [item.material_id] || 0;
+            total += preco * item.quantidade;
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between';
+            li.innerHTML =
+                `<span>${item.material_nome} (${item.quantidade})</span><strong>R$ ${(preco * item.quantidade).toFixed(2)}</strong>`;
+            lista.appendChild(li);
+        });
+        document.getElementById('total-carrinho').textContent = total.toFixed(2);
+    }
+
+    function limparCarrinho() {
+        localStorage.removeItem('carrinho_compra');
+        carregarCarrinho();
+    }
+
+    document.addEventListener('input', () => {
+        salvarCarrinho();
+        carregarCarrinho();
     });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        carregarCarrinho();
+    });
+
+    let abortController = null;
+
+document.getElementById('busca-cliente').addEventListener('input', function() {
+    const termo = this.value.trim();
+    const lista = document.getElementById('resultado-clientes');
+    lista.innerHTML = '';
+
+    if (abortController) {
+        // Aborta requisição anterior se existir
+        abortController.abort();
+    }
+    abortController = new AbortController();
+    const signal = abortController.signal;
+
+    if (termo.length < 2) return;
+
+    fetch('api/clientes.php?q=' + encodeURIComponent(termo), { signal })
+        .then(res => res.json())
+        .then(data => {
+            // Verifica se o termo atual ainda é o mesmo
+            if (termo !== document.getElementById('busca-cliente').value.trim()) {
+                // Se mudou, ignora essa resposta
+                return;
+            }
+
+            if (data.length === 0) {
+                lista.innerHTML = `
+                    <li class="list-group-item text-danger">Nenhum cliente encontrado</li>
+                    <li class="list-group-item text-center">
+                        <a href="cadastro_clientes.php" class="btn btn-sm btn-primary">
+                            <i class="bi bi-person-plus-fill"></i> Cadastrar Novo Cliente
+                        </a>
+                    </li>`;
+                return;
+            }
+
+            data.forEach(cliente => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item list-group-item-action';
+                li.setAttribute('tabindex', '0');
+                li.textContent = cliente.nome;
+
+                li.addEventListener('click', () => {
+                    clienteSelecionado = cliente;
+                    document.getElementById('cliente-selecionado').textContent = cliente.nome;
+                    document.getElementById('tabela-selecionada').textContent = cliente.listas_precos_nome;
+                    bootstrap.Modal.getInstance(document.getElementById('modalSelecionarCliente')).hide();
+                });
+
+                li.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        li.click();
+                    }
+                });
+
+                lista.appendChild(li);
+            });
+
+            // Foca no primeiro item
+            const primeiroItem = document.querySelector('#resultado-clientes .list-group-item-action');
+            if (primeiroItem) primeiroItem.focus();
+        })
+        .catch(err => {
+            if (err.name === 'AbortError') {
+                // fetch abortado, não precisa fazer nada
+                return;
+            }
+            console.error('Erro na busca:', err);
+        });
+});
+
     </script>
-
-
-
-    </div>
-
-    <?php include __DIR__.'/includes/footer.php'; ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
-
 
 </html>
