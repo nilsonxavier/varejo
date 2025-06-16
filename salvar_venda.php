@@ -4,6 +4,9 @@ require_once 'conexx/config.php';
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
 
+// Pega a data/hora atual do PHP no timezone configurado
+$data_atual = date('Y-m-d H:i:s');
+
 // Verificar caixa aberto
 $result = $conn->query("SELECT id FROM caixas WHERE status='aberto' LIMIT 1");
 $caixa = $result->fetch_assoc();
@@ -61,9 +64,9 @@ foreach ($material_ids as $index => $material_id) {
 // Total pago (soma de todos os métodos)
 $valor_pago = $valor_dinheiro + $valor_pix + $valor_cartao;
 
-// Salvar a venda
-$stmt = $conn->prepare("INSERT INTO vendas (cliente_id, lista_preco_id, total, valor_dinheiro, valor_pix, valor_cartao, valor_pago) VALUES (?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("iiddddd", $cliente_id, $lista_preco_id, $total, $valor_dinheiro, $valor_pix, $valor_cartao, $valor_pago);
+// Salvar a venda, incluindo a data do PHP
+$stmt = $conn->prepare("INSERT INTO vendas (cliente_id, lista_preco_id, total, valor_dinheiro, valor_pix, valor_cartao, valor_pago, data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("iiddddds", $cliente_id, $lista_preco_id, $total, $valor_dinheiro, $valor_pix, $valor_cartao, $valor_pago, $data_atual);
 $stmt->execute();
 $venda_id = $stmt->insert_id;
 
@@ -81,11 +84,11 @@ foreach ($itens as $item) {
     $stmt_item->execute();
 }
 
-// Registrar no caixa apenas o dinheiro
+// Registrar no caixa apenas o dinheiro, incluindo data
 if (in_array('dinheiro', $formas_pagamento) && $valor_dinheiro > 0) {
-    $stmt_caixa = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao) VALUES (?, 'entrada', ?, ?)");
+    $stmt_caixa = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao) VALUES (?, 'entrada', ?, ?, ?)");
     $descricao = "Venda ID $venda_id - pagamento em dinheiro";
-    $stmt_caixa->bind_param("ids", $caixa_id, $valor_dinheiro, $descricao);
+    $stmt_caixa->bind_param("idss", $caixa_id, $valor_dinheiro, $descricao, $data_atual);
     $stmt_caixa->execute();
 }
 
