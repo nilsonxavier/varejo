@@ -1,6 +1,15 @@
 <?php
+session_start();
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
+
+
+require_once 'conexx/config.php';
+
+// Identifica a empresa
+$empresa_id = $_SESSION['usuario_empresa'];
+
+
 ?>
 
 <head>
@@ -8,6 +17,9 @@ include __DIR__.'/includes/navbar.php';
     <title>Compra - PDV</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+   
+   
+
     <style>
     .section-card {
         background-color: #ffffff;
@@ -42,45 +54,45 @@ include __DIR__.'/includes/navbar.php';
         font-size: 1.5rem;
     }
     </style>
+
+    <script>
+    
+    </script>
 </head>
 
 <body>
     <div class="container py-4">
         <div class="row g-4">
             <!-- Coluna do Formulário -->
-            <div class="col-md-6">
-                <div class="section-card">
-                    <h4><i class="bi bi-cart-plus"></i> PDV de Compra</h4>
-                    <form id="form-compra">
+            <div class="col-lg-6 col-md-12 mb-4">
+                <h4><i class="bi bi-cart-plus"></i> PDV de Compra</h4>
+            <div class="form-group">
+                <label for="busca_produto">Buscar Produto (nome ou código):</label>
+                <input type="text" id="busca_produto" class="form-control" placeholder="Digite nome ou código" autocomplete="off" autofocus>
+                <div id="resultado_busca" class="list-group mt-2"></div>
+            </div>
 
-                        <!-- Itens -->
-                        <h5>Itens:</h5>
-                        <div id="itens">
-                            <div class="row g-2 mb-2">
-                                <div class="col-6">
-                                    <select class="form-select" name="material_id[]">
-                                        <option value="1">Material A</option>
-                                        <option value="2">Material B</option>
-                                    </select>
-                                </div>
-                                <div class="col-4">
-                                    <input type="number" class="form-control" name="quantidade[]" placeholder="Qtd">
-                                </div>
-                                <div class="col-2">
-                                    <button type="button" class="btn btn-outline-danger" onclick="removerItem(this)"><i
-                                            class="bi bi-trash"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-outline-secondary" onclick="adicionarItem()">
-                            <i class="bi bi-plus-circle"></i> Adicionar Item
-                        </button>
-                    </form>
+            <div id="form_detalhes" class="mt-4" style="display: none;">
+                <h5>Produto Selecionado: <span id="produto_selecionado"></span></h5>
+                <input type="hidden" id="produto_id">
+
+                <div class="form-group mt-3">
+                    <label for="quantidade">Quantidade (kg):</label>
+                    <input type="number" id="quantidade" class="form-control" min="0.01" step="0.01" placeholder="Informe a quantidade">
+                </div>
+
+                <div class="form-group mt-3">
+                    <label for="preco_unitario">Preço Unitário (R$):</label>
+                    <input type="number" id="preco_unitario" class="form-control" step="0.01" placeholder="Informe o preço unitário">
                 </div>
             </div>
+        </div>
 
             <!-- Coluna do Carrinho -->
             <div class="col-md-6">
+                <div class="col-md-6">
+    
+
                 <div class="section-card">
                     <h4><i class="bi bi-basket"></i> Itens no Carrinho</h4>
                     <div class="mb-2">
@@ -91,7 +103,10 @@ include __DIR__.'/includes/navbar.php';
                     </div>
                     <ul class="list-group" id="lista-carrinho"></ul>
                     <div class="mt-3">
-                        <strong>Total: R$ <span id="total-carrinho">0.00</span></strong>
+                       
+                            
+
+                    </div>
                     </div>
                     <button onclick="limparCarrinho()" class="btn btn-sm btn-outline-danger mt-2">Limpar
                         Carrinho</button>
@@ -126,14 +141,7 @@ include __DIR__.'/includes/navbar.php';
     </div>
 
     <script>
-    const caixaAberto = false;
-    const precos = {
-        1: {
-            1: 10.00,
-            2: 20.00
-        }
-    };
-
+    
     let clienteSelecionado = null;
 
     function abrirModalCliente() {
@@ -143,142 +151,86 @@ include __DIR__.'/includes/navbar.php';
         modal.show();
     }
 
-    function adicionarItem() {
-        const container = document.getElementById('itens');
-        const modelo = container.children[0].cloneNode(true);
-        modelo.querySelectorAll('input').forEach(input => input.value = '');
-        container.appendChild(modelo);
-    }
-
-    function removerItem(btn) {
-        const row = btn.closest('.row');
-        const container = document.getElementById('itens');
-        if (container.children.length > 1) row.remove();
-        salvarCarrinho();
-    }
-
-    function salvarCarrinho() {
-        const lista_id = document.getElementById('lista_preco').value;
-        const itens = [];
-        document.querySelectorAll('#itens .row').forEach(row => {
-            const sel = row.querySelector('select');
-            const id = sel.value;
-            const nome = sel.options[sel.selectedIndex].text;
-            const qtd = parseFloat(row.querySelector('input').value) || 0;
-            itens.push({
-                material_id: id,
-                material_nome: nome,
-                quantidade: qtd
-            });
-        });
-        localStorage.setItem('carrinho_compra', JSON.stringify(itens));
-    }
-
-    function carregarCarrinho() {
-        const lista = document.getElementById('lista-carrinho');
-        const lista_id = document.getElementById('lista_preco').value;
-        const dados = JSON.parse(localStorage.getItem('carrinho_compra') || '[]');
-        let total = 0;
-        lista.innerHTML = '';
-        dados.forEach(item => {
-            const preco = precos[lista_id]?. [item.material_id] || 0;
-            total += preco * item.quantidade;
-            const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between';
-            li.innerHTML =
-                `<span>${item.material_nome} (${item.quantidade})</span><strong>R$ ${(preco * item.quantidade).toFixed(2)}</strong>`;
-            lista.appendChild(li);
-        });
-        document.getElementById('total-carrinho').textContent = total.toFixed(2);
-    }
-
-    function limparCarrinho() {
-        localStorage.removeItem('carrinho_compra');
-        carregarCarrinho();
-    }
-
-    document.addEventListener('input', () => {
-        salvarCarrinho();
-        carregarCarrinho();
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-        carregarCarrinho();
-    });
-
     let abortController = null;
 
-document.getElementById('busca-cliente').addEventListener('input', function() {
-    const termo = this.value.trim();
-    const lista = document.getElementById('resultado-clientes');
-    lista.innerHTML = '';
+    document.getElementById('busca-cliente').addEventListener('input', function() {
+        const termo = this.value.trim();
+        const lista = document.getElementById('resultado-clientes');
+        lista.innerHTML = '';
 
-    if (abortController) {
-        // Aborta requisição anterior se existir
-        abortController.abort();
-    }
-    abortController = new AbortController();
-    const signal = abortController.signal;
+        if (abortController) {
+            // Aborta requisição anterior se existir
+            abortController.abort();
+        }
+        abortController = new AbortController();
+        const signal = abortController.signal;
 
-    if (termo.length < 2) return;
+        if (termo.length < 2) return;
 
-    fetch('api/clientes.php?q=' + encodeURIComponent(termo), { signal })
-        .then(res => res.json())
-        .then(data => {
-            // Verifica se o termo atual ainda é o mesmo
-            if (termo !== document.getElementById('busca-cliente').value.trim()) {
-                // Se mudou, ignora essa resposta
-                return;
-            }
+        fetch('api/clientes.php?q=' + encodeURIComponent(termo), {
+                signal
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Verifica se o termo atual ainda é o mesmo
+                if (termo !== document.getElementById('busca-cliente').value.trim()) {
+                    // Se mudou, ignora essa resposta
+                    return;
+                }
 
-            if (data.length === 0) {
-                lista.innerHTML = `
+                if (data.length === 0) {
+                    lista.innerHTML = `
                     <li class="list-group-item text-danger">Nenhum cliente encontrado</li>
                     <li class="list-group-item text-center">
                         <a href="cadastro_clientes.php" class="btn btn-sm btn-primary">
                             <i class="bi bi-person-plus-fill"></i> Cadastrar Novo Cliente
                         </a>
                     </li>`;
-                return;
-            }
+                    return;
+                }
 
-            data.forEach(cliente => {
-                const li = document.createElement('li');
-                li.className = 'list-group-item list-group-item-action';
-                li.setAttribute('tabindex', '0');
-                li.textContent = cliente.nome;
-                const listaPrecos = cliente.listas_precos_nome || 'Nenhuma lista';
+                data.forEach(cliente => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item list-group-item-action';
+                    li.setAttribute('tabindex', '0');
+                    li.textContent = cliente.nome;
+                    const listaPrecos = cliente.listas_precos_nome || 'Nenhuma lista';
+                    // pega id tabela de preços
+                    //const idTabela = cliente.lista_preco_id || 'nenhuma tabela';
 
-                li.addEventListener('click', () => {
-                    clienteSelecionado = cliente;
-                    document.getElementById('cliente-selecionado').textContent = cliente.nome;
-                    document.getElementById('tabela-selecionada').textContent = listaPrecos;
-                    bootstrap.Modal.getInstance(document.getElementById('modalSelecionarCliente')).hide();
+                    li.addEventListener('click', () => {
+                        clienteSelecionado = cliente;
+                        document.getElementById('cliente-selecionado').textContent = cliente
+                            .nome;
+                        document.getElementById('tabela-selecionada').textContent =
+                            listaPrecos;
+                        bootstrap.Modal.getInstance(document.getElementById(
+                            'modalSelecionarCliente')).hide();
+                    });
+
+                    li.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            li.click();
+                        }
+                    });
+
+                    lista.appendChild(li);
                 });
 
-                li.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        li.click();
-                    }
-                });
-
-                lista.appendChild(li);
+                // Foca no primeiro item
+                const primeiroItem = document.querySelector('#resultado-clientes .list-group-item-action');
+                if (primeiroItem) primeiroItem.focus();
+            })
+            .catch(err => {
+                if (err.name === 'AbortError') {
+                    // fetch abortado, não precisa fazer nada
+                    return;
+                }
+                console.error('Erro na busca:', err);
             });
+    });
 
-            // Foca no primeiro item
-            const primeiroItem = document.querySelector('#resultado-clientes .list-group-item-action');
-            if (primeiroItem) primeiroItem.focus();
-        })
-        .catch(err => {
-            if (err.name === 'AbortError') {
-                // fetch abortado, não precisa fazer nada
-                return;
-            }
-            console.error('Erro na busca:', err);
-        });
-});
+</script>
 
-    </script>
-    
 
     <?php include __DIR__.'/includes/footer.php'; ?>

@@ -1,311 +1,289 @@
 <?php
 require_once 'conexx/config.php';
-
-// Verificar caixa aberto
-$result = $conn->query("SELECT id FROM caixas WHERE status='aberto' LIMIT 1");
-$caixa_aberto = $result->fetch_assoc();
-
-?>
-<script>
-var caixaAberto = <?= $caixa_aberto ? 'true' : 'false' ?>;
-</script>
-
-<?php
-
-// Clientes
-$clientes = $conn->query("SELECT id, nome, lista_preco_id FROM clientes");
-
-// Listas de Preços
-$listas_precos = $conn->query("SELECT id, nome FROM listas_precos");
-
-// Materiais
-$materiais = $conn->query("SELECT id, nome FROM materiais");
-
-// Preços por Lista
-$precos = [];
-$listas_precos->data_seek(0);
-while ($l = $listas_precos->fetch_assoc()) {
-    $lista_id = $l['id'];
-    $precos[$lista_id] = [];
-    $res = $conn->query("SELECT material_id, preco FROM precos_materiais WHERE lista_id = $lista_id");
-    while ($p = $res->fetch_assoc()) {
-        $precos[$lista_id][$p['material_id']] = $p['preco'];
-    }
-}
-
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
+include __DIR__.'/includes/footer.php';
+
+// Clientes
+$clientes_arr = [];
+$res = $conn->query("SELECT id, nome, lista_preco_id FROM clientes");
+while ($c = $res->fetch_assoc()) {
+    $clientes_arr[] = ["id" => $c['id'], "nome" => $c['nome'], "lista_preco_id" => $c['lista_preco_id']];
+}
+
+// Listas de Preço
+$listas_precos_arr = [];
+$res = $conn->query("SELECT id, nome FROM listas_precos");
+while ($l = $res->fetch_assoc()) {
+    $listas_precos_arr[] = ["id" => $l['id'], "nome" => $l['nome']];
+}
+
+// Materiais
+$materiais_arr = [];
+$res = $conn->query("SELECT id, nome FROM materiais");
+while ($m = $res->fetch_assoc()) {
+    $materiais_arr[] = ["id" => $m['id'], "nome" => $m['nome']];
+}
+
+// Preços dos Materiais por Lista
+$precos_materiais = [];
+$res = $conn->query("SELECT lista_id, material_id, preco FROM precos_materiais");
+while ($p = $res->fetch_assoc()) {
+    $precos_materiais[$p['lista_id']][$p['material_id']] = floatval($p['preco']);
+}
 ?>
 
+<style>
+.section-card {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+.item-actions button {
+    margin-left: 5px;
+    padding: 2px 6px;
+    font-size: 0.8rem;
+}
+</style>
 
-    <title>COMPRAS - PDV</title>
-    <style>
-    .section-card {
-        background-color: #ffffff;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
+<div class="container-fluid py-4">
+    <div class="row g-4">
+        <div class="col-md-7">
+            <div class="section-card">
+                <h4>Cadastro da Venda</h4>
+                <form method="POST" action="salvar_venda.php" id="formVenda">
 
-    h2,
-    h3 {
-        margin-bottom: 20px;
-        color: #343a40;
-    }
+                    <label><strong>Cliente (ID ou Nome):</strong></label>
+                    <input type="text" name="cliente_id" id="cliente" class="form-control mb-2">
 
-    .btn-primary,
-    .btn-success,
-    .btn-danger,
-    .btn-outline-secondary {
-        border-radius: 8px;
-    }
+                    <label><strong>Lista de Preços:</strong></label>
+                    <input type="text" name="lista_preco_id" id="lista_preco" class="form-control mb-2">
 
-    .list-group-item {
-        border-radius: 8px;
-    }
-    </style>
-    <script>
-    var precos = <?php echo json_encode($precos); ?>;
+                    <h5>Adicionar Item:</h5>
+                    <input type="hidden" id="edit_index" value="">
+                    <input type="text" id="material_input" class="form-control mb-2" placeholder="Material (ID ou Nome)">
+                    <input type="number" id="quantidade_input" class="form-control mb-2" placeholder="Quantidade" step="0.01" min="0">
 
-    function carregarListaPreco() {
-        var clienteId = document.getElementById('cliente').value;
-        var listaPreco = document.getElementById('lista_preco');
+                    <button type="button" id="adicionarItemBtn" class="btn btn-outline-primary w-100">Adicionar/Editar Item</button>
 
-        <?php
-        $clientes->data_seek(0);
-        while ($c = $clientes->fetch_assoc()) {
-            echo "if(clienteId == '{$c['id']}') { listaPreco.value = '{$c['lista_preco_id']}'; }\n";
-        }
-        ?>
-        calcularTotal();
-    }
+                    <button type="button" class="btn btn-success mt-3 w-100" id="btnAbrirModalPagamento">Finalizar Venda</button>
 
-    function adicionarItem() {
-        var container = document.getElementById('itens');
-        var item = container.children[0].cloneNode(true);
-        item.querySelectorAll('input').forEach(input => input.value = '');
-        container.appendChild(item);
-        calcularTotal();
-    }
+                    <div class="modal fade" id="modalPagamento" tabindex="-1" aria-labelledby="modalPagamentoLabel" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title">Formas de Pagamento</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                          </div>
+                          <div class="modal-body">
+                            <h6>Total da Venda: R$ <span id="modal_total_venda">0.00</span></h6>
 
-    function removerItem(btn) {
-        var item = btn.parentElement.parentElement;
-        if (document.getElementById('itens').children.length > 1) {
-            item.remove();
-            calcularTotal();
-        }
-    }
+                            <div class="mb-2">
+                              <label>Dinheiro:</label>
+                              <input type="number" step="0.01" name="valor_dinheiro" id="valor_dinheiro" class="form-control">
+                            </div>
 
-    function calcularTotal() {
-        var lista_id = document.getElementById('lista_preco').value;
-        var total = 0;
+                            <div class="mb-2">
+                              <label>Pix:</label>
+                              <input type="number" step="0.01" name="valor_pix" id="valor_pix" class="form-control">
+                            </div>
 
-        document.querySelectorAll('#itens > div').forEach(function(itemDiv) {
-            var material_id = itemDiv.querySelector('select').value;
-            var quantidade = parseFloat(itemDiv.querySelector('input').value) || 0;
-            var preco = 0;
+                            <div class="mb-2">
+                              <label>Cartão:</label>
+                              <input type="number" step="0.01" name="valor_cartao" id="valor_cartao" class="form-control">
+                            </div>
 
-            if (precos[lista_id] && precos[lista_id][material_id]) {
-                preco = parseFloat(precos[lista_id][material_id]);
-            }
+                            <h6>Total Pago: R$ <span id="modal_total_pago">0.00</span></h6>
 
-            total += quantidade * preco;
-        });
+                            <div id="aviso_pagamento" class="text-danger mt-2"></div>
 
-        document.getElementById('total_venda').innerText = total.toFixed(2);
-    }
-
-    function toggleCamposPagamento() {
-        document.getElementById('campo_dinheiro').style.display = document.getElementById('dinheiro').checked ?
-            'block' : 'none';
-        document.getElementById('campo_pix').style.display = document.getElementById('pix').checked ? 'block' : 'none';
-        document.getElementById('campo_cartao').style.display = document.getElementById('cartao').checked ? 'block' :
-            'none';
-    }
-
-    document.addEventListener('change', function(e) {
-        if (e.target.matches(
-                '#lista_preco, select[name="material_id[]"], input[name="quantidade[]"], input[type="checkbox"]'
-                )) {
-            calcularTotal();
-            toggleCamposPagamento();
-        }
-    });
-
-    document.addEventListener('input', function(e) {
-        if (e.target.matches('input[name="quantidade[]"]')) {
-            calcularTotal();
-        }
-    });
-
-    window.onload = function() {
-        toggleCamposPagamento();
-    };
-    </script>
-</head>
-
-<body>
-
-    <div class="container py-4">
-
-        <!-- Modal para abrir caixa -->
-        <div class="modal fade" id="modalCaixaFechado" tabindex="-1" aria-labelledby="modalCaixaFechadoLabel"
-            aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalCaixaFechadoLabel">Caixa Fechado</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            <div id="opcao_troco" class="form-check mt-2" style="display:none;">
+                              <input class="form-check-input" type="checkbox" name="gerar_troco" id="gerar_troco" checked>
+                              <label class="form-check-label">Gerar troco no caixa (se desmarcar, vai para saldo do cliente)</label>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" id="btnConfirmarPagamento">Confirmar Pagamento</button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div class="modal-body">
-                        O caixa está fechado. Deseja abrir um caixa agora?
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" id="btnCancelar">Cancelar</button>
-                        <button type="button" id="btnAbrirCaixa" class="btn btn-primary">Abrir Caixa</button>
-                    </div>
-                </div>
+
+                </form>
             </div>
         </div>
-        <!-- fim Modal para abrir caixa -->
 
-        <div class="section-card">
-            <h2><i class="bi bi-cart-plus"></i> Nova Venda</h2>
-
-            <form method="POST" action="salvar_venda.php">
-
-                <!-- Cliente -->
-                <div class="mb-3">
-                    <label><strong>Cliente (opcional):</strong></label>
-                    <select name="cliente_id" id="cliente" class="form-select" onchange="carregarListaPreco()">
-                        <option value="">-- Sem cliente --</option>
-                        <?php
-                    $clientes->data_seek(0);
-                    while ($c = $clientes->fetch_assoc()) {
-                        echo "<option value='{$c['id']}'>{$c['nome']}</option>";
-                    }
-                    ?>
-                    </select>
-                </div>
-
-                <!-- Lista de Preços -->
-                <div class="mb-3">
-                    <label><strong>Lista de Preços:</strong></label>
-                    <select name="lista_preco_id" id="lista_preco" class="form-select" onchange="calcularTotal()">
-                        <?php
-                    $listas_precos->data_seek(0);
-                    while ($l = $listas_precos->fetch_assoc()) {
-                        echo "<option value='{$l['id']}'>{$l['nome']}</option>";
-                    }
-                    ?>
-                    </select>
-                </div>
-
-                <!-- Itens da Venda -->
-                <h5>Itens da Venda:</h5>
-                <div id="itens">
-                    <div class="row g-2 mb-2">
-                        <div class="col-md-5">
-                            <select name="material_id[]" class="form-select" required>
-                                <?php
-                            $materiais->data_seek(0);
-                            while ($m = $materiais->fetch_assoc()) {
-                                echo "<option value='{$m['id']}'>{$m['nome']}</option>";
-                            }
-                            ?>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <input type="number" step="0.01" name="quantidade[]" class="form-control"
-                                placeholder="Quantidade" required>
-                        </div>
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerItem(this)">
-                                <i class="bi bi-trash"></i> Remover
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <button type="button" onclick="adicionarItem()" class="btn btn-outline-secondary mb-3">
-                    <i class="bi bi-plus-circle"></i> Adicionar Item
-                </button>
-
-                <!-- Formas de Pagamento -->
-                <h5>Formas de Pagamento:</h5>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="formas_pagamento[]" value="dinheiro"
-                        id="dinheiro">
-                    <label class="form-check-label" for="dinheiro">Dinheiro</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="formas_pagamento[]" value="pix" id="pix">
-                    <label class="form-check-label" for="pix">Pix</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="formas_pagamento[]" value="cartao"
-                        id="cartao">
-                    <label class="form-check-label" for="cartao">Cartão</label>
-                </div>
-
-                <div class="mt-3" id="campo_dinheiro" style="display:none;">
-                    <label><strong>Valor em Dinheiro:</strong></label>
-                    <input type="number" step="0.01" name="valor_dinheiro" class="form-control"
-                        placeholder="Ex: 100.00">
-                </div>
-
-                <div class="mt-3" id="campo_pix" style="display:none;">
-                    <label><strong>Valor em Pix:</strong></label>
-                    <input type="number" step="0.01" name="valor_pix" class="form-control" placeholder="Ex: 100.00">
-                </div>
-
-                <div class="mt-3" id="campo_cartao" style="display:none;">
-                    <label><strong>Valor em Cartão:</strong></label>
-                    <input type="number" step="0.01" name="valor_cartao" class="form-control" placeholder="Ex: 100.00">
-                </div>
-
-                <!-- Total -->
-                <div class="mt-4">
-                    <h4>Total da Venda: R$ <span id="total_venda">0.00</span></h4>
-                </div>
-
-                <button type="submit" class="btn btn-success mt-3">
-                    <i class="bi bi-check-circle"></i> Finalizar Venda
-                </button>
-            </form>
+        <div class="col-md-5">
+            <div class="section-card">
+                <h4>Resumo da Venda</h4>
+                <div id="resumo_itens"></div>
+                <h5>Total: R$ <span id="total_venda">0.00</span></h5>
+            </div>
         </div>
+    </div>
+</div>
 
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var caixaAberto = <?php echo $caixa_aberto ? 'true' : 'false'; ?>;
+<script>
+var clientes = <?php echo json_encode($clientes_arr); ?>;
+var listas_precos = <?php echo json_encode($listas_precos_arr); ?>;
+var materiais = <?php echo json_encode($materiais_arr); ?>;
+var precos = <?php echo json_encode($precos_materiais); ?>;
 
-            if (!caixaAberto) {
-                var modalElement = document.getElementById('modalCaixaFechado');
-                var modalCaixa = new bootstrap.Modal(modalElement, {
-                    backdrop: 'static', // impede clique fora
-                    keyboard: false // impede fechar com ESC
-                });
-
-                modalCaixa.show();
-
-                // Botão abrir caixa
-                document.getElementById('btnAbrirCaixa').addEventListener('click', function() {
-                    window.location.href = 'caixa.php';
-                });
-
-                // Botão cancelar
-                document.getElementById('btnCancelar').addEventListener('click', function() {
-                    window.location.href = 'index.php';
-                });
-
-                // Qualquer fechamento (inclusive X ou código)
-                modalElement.addEventListener('hidden.bs.modal', function() {
-                    window.location.href = 'index.php';
-                });
-            }
+function autocomplete(inputId, dataArray) {
+    const input = document.getElementById(inputId);
+    input.addEventListener('input', function() {
+        let term = this.value.toLowerCase();
+        let options = dataArray.filter(function(item) {
+            return item.nome.toLowerCase().includes(term) || item.id == term;
+        }).map(function(item) {
+            return item.id + " - " + item.nome;
         });
-        </script>
+        input.setAttribute('list', inputId + '_list');
+        let datalist = document.getElementById(inputId + '_list') || document.createElement('datalist');
+        datalist.id = inputId + '_list';
+        datalist.innerHTML = options.map(opt => `<option value="${opt}">`).join('');
+        document.body.appendChild(datalist);
+    });
+}
 
+function atualizarResumo() {
+    let total = 0;
+    let html = '';
 
+    let listaInput = document.getElementById('lista_preco').value.split(' ')[0];
+    let listaId = parseInt(listaInput) || 1;
 
-    <?php include __DIR__.'/includes/footer.php'; ?>
+    document.querySelectorAll('input[name="material_id[]"]').forEach(function(input, index) {
+        let materialId = parseInt(input.value.split(' ')[0]);
+        let qtd = parseFloat(document.getElementsByName('quantidade[]')[index].value) || 0;
+        let preco = (precos[listaId] && precos[listaId][materialId]) ? precos[listaId][materialId] : 0;
+        let subtotal = preco * qtd;
+        total += subtotal;
+
+        html += `<div>${materialId} - Qtd: ${qtd} | R$ ${(preco).toFixed(2)} = R$ ${(subtotal).toFixed(2)}
+            <span class="item-actions">
+                <button type="button" onclick="editarItem(${index})">✏️</button>
+                <button type="button" onclick="removerItem(${index})">🗑️</button>
+            </span>
+        </div>`;
+    });
+
+    document.getElementById('resumo_itens').innerHTML = html;
+    document.getElementById('total_venda').innerText = total.toFixed(2);
+}
+
+function adicionarOuEditarItem() {
+    let material = document.getElementById('material_input').value.trim();
+    let quantidade = document.getElementById('quantidade_input').value;
+    let editIndex = document.getElementById('edit_index').value;
+
+    if (!material || quantidade <= 0) {
+        alert("Preencha material e quantidade corretamente");
+        return;
+    }
+
+    if (editIndex !== '') {
+        document.getElementsByName('material_id[]')[editIndex].value = material;
+        document.getElementsByName('quantidade[]')[editIndex].value = quantidade;
+        document.getElementById('edit_index').value = '';
+    } else {
+        let inputMat = document.createElement('input');
+        inputMat.type = 'hidden';
+        inputMat.name = 'material_id[]';
+        inputMat.value = material;
+
+        let inputQtd = document.createElement('input');
+        inputQtd.type = 'hidden';
+        inputQtd.name = 'quantidade[]';
+        inputQtd.value = quantidade;
+
+        document.getElementById('formVenda').appendChild(inputMat);
+        document.getElementById('formVenda').appendChild(inputQtd);
+    }
+
+    document.getElementById('material_input').value = '';
+    document.getElementById('quantidade_input').value = '';
+    document.getElementById('material_input').focus();
+    atualizarResumo();
+}
+
+function editarItem(index) {
+    document.getElementById('material_input').value = document.getElementsByName('material_id[]')[index].value;
+    document.getElementById('quantidade_input').value = document.getElementsByName('quantidade[]')[index].value;
+    document.getElementById('edit_index').value = index;
+    document.getElementById('material_input').focus();
+}
+
+function removerItem(index) {
+    document.getElementsByName('material_id[]')[index].remove();
+    document.getElementsByName('quantidade[]')[index].remove();
+    atualizarResumo();
+}
+
+function atualizarModalPagamento() {
+    let totalVenda = parseFloat(document.getElementById('total_venda').innerText) || 0;
+    let dinheiro = parseFloat(document.getElementById('valor_dinheiro').value) || 0;
+    let pix = parseFloat(document.getElementById('valor_pix').value) || 0;
+    let cartao = parseFloat(document.getElementById('valor_cartao').value) || 0;
+
+    let totalPago = dinheiro + pix + cartao;
+    document.getElementById('modal_total_venda').innerText = totalVenda.toFixed(2);
+    document.getElementById('modal_total_pago').innerText = totalPago.toFixed(2);
+
+    let aviso = '';
+    let opcaoTroco = document.getElementById('opcao_troco');
+
+    if (totalPago < totalVenda) {
+        aviso = "⚠️ Valor pago é menor que o total. Será gerado saldo devedor.";
+        opcaoTroco.style.display = 'none';
+    } else if (totalPago > totalVenda) {
+        if (dinheiro > 0) {
+            aviso = "⚠️ Haverá troco no caixa.";
+            opcaoTroco.style.display = 'block';
+        } else {
+            aviso = "⚠️ Excesso será saldo para o cliente.";
+            opcaoTroco.style.display = 'none';
+        }
+    } else {
+        aviso = "✅ Pagamento exato.";
+        opcaoTroco.style.display = 'none';
+    }
+
+    document.getElementById('aviso_pagamento').innerText = aviso;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    autocomplete('cliente', clientes);
+    autocomplete('lista_preco', listas_precos);
+    autocomplete('material_input', materiais);
+
+    document.getElementById('adicionarItemBtn').addEventListener('click', adicionarOuEditarItem);
+
+    document.getElementById('btnAbrirModalPagamento').addEventListener('click', function() {
+        atualizarResumo();
+        atualizarModalPagamento();
+        new bootstrap.Modal(document.getElementById('modalPagamento')).show();
+    });
+
+    ['valor_dinheiro', 'valor_pix', 'valor_cartao'].forEach(function(id) {
+        document.getElementById(id).addEventListener('input', atualizarModalPagamento);
+    });
+
+    document.getElementById('formVenda').addEventListener('keydown', function(event) {
+        const activeEl = document.activeElement;
+        if (event.key === 'Enter') {
+            if (activeEl.tagName.toLowerCase() !== 'button') {
+                event.preventDefault();
+                let inputs = Array.from(this.querySelectorAll('input, button, textarea, select')).filter(el => !el.disabled && el.offsetParent !== null);
+                let index = inputs.indexOf(activeEl);
+                if (index > -1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            }
+        }
+    });
+});
+</script>

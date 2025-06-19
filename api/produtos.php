@@ -1,29 +1,27 @@
 <?php
 require_once '../conexx/config.php';
 
-$termo = $_GET['q'] ?? '';
-$produtos = [];
+$q = isset($_GET['q']) ? trim($_GET['q']) : '';
 
-
-// retorna nome cliente e lista de preços
-if ($termo !== '') {
-    $sql = "
-    SELECT c.id, c.nome, c.lista_preco_id, lp.nome AS listas_precos_nome
-    FROM clientes c
-    LEFT JOIN listas_precos lp ON c.lista_preco_id = lp.id
-    WHERE c.nome LIKE CONCAT('%', ?, '%')
-    GROUP BY c.id
-    ORDER BY c.nome
-    LIMIT 10
-";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $termo);
-$stmt->execute();
-$res = $stmt->get_result();
-while ($row = $res->fetch_assoc()) {
-    $clientes[] = $row;
+if (strlen($q) < 2) {
+    echo json_encode([]);
+    exit;
 }
 
+$stmt = $conn->prepare("SELECT id, nome, preco_venda AS preco FROM produtos WHERE nome LIKE ? OR id = ?");
+$like = "%$q%";
+$stmt->bind_param("ss", $like, $q);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$produtos = [];
+
+while ($row = $result->fetch_assoc()) {
+    $produtos[] = [
+        'id' => $row['id'],
+        'nome' => $row['nome'],
+        'preco' => number_format($row['preco'], 2, ',', '.')
+    ];
 }
 
 header('Content-Type: application/json');

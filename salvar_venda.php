@@ -1,8 +1,9 @@
 <?php
 require_once 'conexx/config.php';
-
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
+
+$data_atual = date('Y-m-d H:i:s');
 
 // Verificar caixa aberto
 $result = $conn->query("SELECT id FROM caixas WHERE status='aberto' LIMIT 1");
@@ -19,11 +20,11 @@ $cliente_id = isset($_POST['cliente_id']) ? intval($_POST['cliente_id']) : null;
 $lista_preco_id = intval($_POST['lista_preco_id']);
 $material_ids = $_POST['material_id'] ?? [];
 $quantidades = $_POST['quantidade'] ?? [];
-$formas_pagamento = $_POST['formas_pagamento'] ?? [];
 
 $valor_dinheiro = isset($_POST['valor_dinheiro']) ? floatval($_POST['valor_dinheiro']) : 0;
 $valor_pix = isset($_POST['valor_pix']) ? floatval($_POST['valor_pix']) : 0;
 $valor_cartao = isset($_POST['valor_cartao']) ? floatval($_POST['valor_cartao']) : 0;
+$gerar_troco = isset($_POST['gerar_troco']); // Checkbox opcional
 
 // Buscar preços da lista
 $precos = [];
@@ -58,12 +59,13 @@ foreach ($material_ids as $index => $material_id) {
     ];
 }
 
-// Total pago (soma de todos os métodos)
+// Total pago
 $valor_pago = $valor_dinheiro + $valor_pix + $valor_cartao;
+$diferenca = $valor_pago - $total;
 
 // Salvar a venda
-$stmt = $conn->prepare("INSERT INTO vendas (cliente_id, lista_preco_id, total, valor_dinheiro, valor_pix, valor_cartao, valor_pago) VALUES (?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("iiddddd", $cliente_id, $lista_preco_id, $total, $valor_dinheiro, $valor_pix, $valor_cartao, $valor_pago);
+$stmt = $conn->prepare("INSERT INTO vendas (cliente_id, lista_preco_id, total, valor_dinheiro, valor_pix, valor_cartao, valor_pago, data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("iiddddds", $cliente_id, $lista_preco_id, $total, $valor_dinheiro, $valor_pix, $valor_cartao, $valor_pago, $data_atual);
 $stmt->execute();
 $venda_id = $stmt->insert_id;
 
@@ -81,28 +83,45 @@ foreach ($itens as $item) {
     $stmt_item->execute();
 }
 
-// Registrar no caixa apenas o dinheiro
-if (in_array('dinheiro', $formas_pagamento) && $valor_dinheiro > 0) {
-    $stmt_caixa = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao) VALUES (?, 'entrada', ?, ?)");
+// Registrar entradas no caixa
+if ($valor_dinheiro > 0) {
+    $stmt_caixa = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao) VALUES (?, 'entrada', ?, ?, ?)");
     $descricao = "Venda ID $venda_id - pagamento em dinheiro";
-    $stmt_caixa->bind_param("ids", $caixa_id, $valor_dinheiro, $descricao);
+    $stmt_caixa->bind_param("idss", $caixa_id, $valor_dinheiro, $descricao, $data_atual);
     $stmt_caixa->execute();
 }
 
-// Atualizar saldo do cliente
-if ($cliente_id) {
-    $diferenca = $valor_pago - $total;
+// Se houve troco (dinheiro > total e cliente pagou mais) e usuário marcou para gerar troco
+if ($diferenca > 0 && $valor_dinheiro > 0 && $gerar_troco) {
+    $stmt_troco = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao) VALUES (?, 'saida', ?, ?, ?)");
+    $descricao_troco = "Troco da Venda ID $venda_id";
+    $stmt_troco->bind_param("idss", $caixa_id, $diferenca, $descricao_troco, $data_atual);
+    $stmt_troco->execute();
+}
 
-    $stmt_saldo = $conn->prepare("UPDATE clientes SET saldo = saldo + ? WHERE id = ?");
-    $stmt_saldo->bind_param("di", $diferenca, $cliente_id);
-    $stmt_saldo->execute();
+// Atualizar saldo do cliente (positivo ou negativo)
+if ($cliente_id) {
+    $ajuste_saldo = 0;
+
+    if ($diferenca < 0) {
+        // Cliente pagou menos
+        $ajuste_saldo = $diferenca;
+    } elseif ($diferenca > 0 && (! $gerar_troco || $valor_dinheiro <= 0)) {
+        // Cliente pagou mais, mas sem troco no caixa (ou pagou via pix/cartão)
+        $ajuste_saldo = $diferenca;
+    }
+
+    if ($ajuste_saldo != 0) {
+        $stmt_saldo = $conn->prepare("UPDATE clientes SET saldo = saldo + ? WHERE id = ?");
+        $stmt_saldo->bind_param("di", $ajuste_saldo, $cliente_id);
+        $stmt_saldo->execute();
+    }
 }
 ?>
 
 <div class="container py-4">
     <div class="section-card">
         <h2><i class="bi bi-check-circle"></i> Venda Concluída</h2>
-
         <p><strong>Total da Venda:</strong> R$ <?php echo number_format($total, 2, ',', '.'); ?></p>
         <p><strong>Valor Pago:</strong> R$ <?php echo number_format($valor_pago, 2, ',', '.'); ?></p>
 

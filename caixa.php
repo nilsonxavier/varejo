@@ -1,7 +1,7 @@
 <?php
 require_once 'verifica_login.php';
 require_once 'conexx/config.php';
-// teste versoes
+
 $usuario_id = $_SESSION['usuario_id'];
 
 // Verifica se existe caixa aberto
@@ -9,7 +9,7 @@ $caixa_aberto = $conn->query("SELECT * FROM caixas WHERE status = 'aberto' ORDER
 
 // Abertura de caixa
 if (isset($_POST['abrir_caixa'])) {
-    // Revalida para evitar duplicação em requisições simultâneas
+    // Revalida para evitar duplicação
     $existe_caixa_aberto = $conn->query("SELECT id FROM caixas WHERE status = 'aberto'")->num_rows;
     if ($existe_caixa_aberto > 0) {
         header("Location: caixa.php");
@@ -17,8 +17,10 @@ if (isset($_POST['abrir_caixa'])) {
     }
 
     $valor_inicial = floatval($_POST['valor_inicial']);
-    $stmt = $conn->prepare("INSERT INTO caixas (usuario_id, data_abertura, valor_inicial, status) VALUES (?, NOW(), ?, 'aberto')");
-    $stmt->bind_param("id", $usuario_id, $valor_inicial);
+    $data_abertura = date('Y-m-d H:i:s');
+
+    $stmt = $conn->prepare("INSERT INTO caixas (usuario_id, data_abertura, valor_inicial, status) VALUES (?, ?, ?, 'aberto')");
+    $stmt->bind_param("isd", $usuario_id, $data_abertura, $valor_inicial);
     $stmt->execute();
     header("Location: caixa.php");
     exit;
@@ -30,10 +32,12 @@ if (isset($_POST['registrar_movimentacao']) && $caixa_aberto) {
     $valor = floatval($_POST['valor']);
     $descricao = trim($_POST['descricao']);
     $caixa_id = $caixa_aberto['id'];
+    $data_movimentacao = date('Y-m-d H:i:s');
 
-    $stmt = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao) VALUES (?, ?, ?, ?, NOW())");
-    $stmt->bind_param("isds", $caixa_id, $tipo, $valor, $descricao);
+    $stmt = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("isdss", $caixa_id, $tipo, $valor, $descricao, $data_movimentacao);
     $stmt->execute();
+
     header("Location: caixa.php");
     exit;
 }
@@ -41,17 +45,15 @@ if (isset($_POST['registrar_movimentacao']) && $caixa_aberto) {
 // Fechar caixa com transação
 if (isset($_POST['fechar_caixa']) && $caixa_aberto) {
     $conn->begin_transaction();
-
     try {
         $caixa_id = $caixa_aberto['id'];
-
         $total_entradas = $conn->query("SELECT SUM(valor) as total FROM movimentacoes WHERE caixa_id = $caixa_id AND tipo = 'entrada'")->fetch_assoc()['total'] ?? 0;
         $total_saidas = $conn->query("SELECT SUM(valor) as total FROM movimentacoes WHERE caixa_id = $caixa_id AND tipo = 'saida'")->fetch_assoc()['total'] ?? 0;
-
         $valor_final = $caixa_aberto['valor_inicial'] + $total_entradas - $total_saidas;
+        $data_fechamento = date('Y-m-d H:i:s');
 
-        $stmt = $conn->prepare("UPDATE caixas SET data_fechamento = NOW(), valor_final = ?, status = 'fechado' WHERE id = ?");
-        $stmt->bind_param("di", $valor_final, $caixa_id);
+        $stmt = $conn->prepare("UPDATE caixas SET data_fechamento = ?, valor_final = ?, status = 'fechado' WHERE id = ?");
+        $stmt->bind_param("sdi", $data_fechamento, $valor_final, $caixa_id);
         $stmt->execute();
 
         $conn->commit();
@@ -67,7 +69,6 @@ if (isset($_POST['fechar_caixa']) && $caixa_aberto) {
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
 include __DIR__.'/includes/footer.php';
-
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
