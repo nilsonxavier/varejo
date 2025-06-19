@@ -63,48 +63,8 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<script>
-$(document).ready(function() {
-    $('#cliente').select2({
-        placeholder: "Selecione ou busque um cliente",
-        width: '100%',
-        matcher: matchCustom
-    });
 
-    $('#lista_preco').select2({
-        placeholder: "Selecione ou busque uma lista de preços",
-        width: '100%',
-        matcher: matchCustom
-    });
 
-    $('select[name="material_id[]"]').select2({
-        placeholder: "Selecione ou busque um material",
-        width: '100%',
-        matcher: matchCustom
-    });
-
-    // Para novos selects criados ao adicionar mais itens
-    $(document).on('DOMNodeInserted', function(e) {
-        $(e.target).find('select').select2({
-            placeholder: "Selecione ou busque um material",
-            width: '100%',
-            matcher: matchCustom
-        });
-    });
-
-    function matchCustom(params, data) {
-        if ($.trim(params.term) === '') return data;
-
-        // Match por nome
-        if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) return data;
-
-        // Match por ID (se o termo for numérico)
-        if (!isNaN(params.term) && params.term == $(data.element).val()) return data;
-
-        return null;
-    }
-});
-</script>
 
 
 
