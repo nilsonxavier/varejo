@@ -152,13 +152,14 @@ function atualizarResumo() {
     let html = '';
 
     document.querySelectorAll('input[name="material_id[]"]').forEach(function(input, index) {
-        let material = input.value;
+        let materialId = parseInt(input.value.split(' ')[0]);
+        let materialNome = materiais.find(m => m.id == materialId)?.nome || "ID " + materialId;
         let qtd = parseFloat(document.getElementsByName('quantidade[]')[index].value) || 0;
         let preco = parseFloat(document.getElementsByName('preco_unitario[]')[index].value) || 0;
         let subtotal = qtd * preco;
         total += subtotal;
 
-        html += `<div>${material} - Qtd: ${qtd} | R$ ${preco.toFixed(2)} = R$ ${subtotal.toFixed(2)}
+        html += `<div>${materialNome} - Qtd: ${qtd} | R$ ${preco.toFixed(2)} = R$ ${subtotal.toFixed(2)}
             <span class="item-actions">
                 <button type="button" onclick="editarItem(${index})">✏️</button>
                 <button type="button" onclick="removerItem(${index})">🗑️</button>
@@ -185,6 +186,16 @@ function adicionarOuEditarItem() {
 
     if (!material || quantidade <= 0 || precoUnitario <= 0) {
         alert("Preencha material, quantidade e preço corretamente");
+        return;
+    }
+
+    // Validação: material precisa existir no banco
+    let materialId = parseInt(material.split(' ')[0]);
+    let materialExiste = materiais.some(function(item) {
+        return item.id == materialId;
+    });
+    if (!materialExiste) {
+        alert("Material não encontrado no banco de dados!");
         return;
     }
 
