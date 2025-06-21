@@ -2,7 +2,6 @@
 require_once 'conexx/config.php';
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
-include __DIR__.'/includes/footer.php';
 
 // Clientes
 $clientes_arr = [];
@@ -25,7 +24,7 @@ while ($m = $res->fetch_assoc()) {
     $materiais_arr[] = ["id" => $m['id'], "nome" => $m['nome']];
 }
 
-// Preços dos Materiais por Lista
+// Preços por lista
 $precos_materiais = [];
 $res = $conn->query("SELECT lista_id, material_id, preco FROM precos_materiais");
 while ($p = $res->fetch_assoc()) {
@@ -65,12 +64,14 @@ while ($p = $res->fetch_assoc()) {
                     <input type="hidden" id="edit_index" value="">
                     <input type="text" id="material_input" class="form-control mb-2" placeholder="Material (ID ou Nome)">
                     <input type="number" id="quantidade_input" class="form-control mb-2" placeholder="Quantidade" step="0.01" min="0">
+                    <input type="number" id="preco_input" class="form-control mb-2" placeholder="Preço Unitário" step="0.01" min="0">
 
                     <button type="button" id="adicionarItemBtn" class="btn btn-outline-primary w-100">Adicionar/Editar Item</button>
 
                     <button type="button" class="btn btn-success mt-3 w-100" id="btnAbrirModalPagamento">Finalizar Venda</button>
 
-                    <div class="modal fade" id="modalPagamento" tabindex="-1" aria-labelledby="modalPagamentoLabel" aria-hidden="true">
+                    <!-- Modal Pagamento -->
+                    <div class="modal fade" id="modalPagamento" tabindex="-1">
                       <div class="modal-dialog">
                         <div class="modal-content">
                           <div class="modal-header">
@@ -84,19 +85,16 @@ while ($p = $res->fetch_assoc()) {
                               <label>Dinheiro:</label>
                               <input type="number" step="0.01" name="valor_dinheiro" id="valor_dinheiro" class="form-control">
                             </div>
-
                             <div class="mb-2">
                               <label>Pix:</label>
                               <input type="number" step="0.01" name="valor_pix" id="valor_pix" class="form-control">
                             </div>
-
                             <div class="mb-2">
                               <label>Cartão:</label>
                               <input type="number" step="0.01" name="valor_cartao" id="valor_cartao" class="form-control">
                             </div>
 
                             <h6>Total Pago: R$ <span id="modal_total_pago">0.00</span></h6>
-
                             <div id="aviso_pagamento" class="text-danger mt-2"></div>
 
                             <div id="opcao_troco" class="form-check mt-2" style="display:none;">
@@ -153,59 +151,61 @@ function atualizarResumo() {
     let total = 0;
     let html = '';
 
-    let listaInput = document.getElementById('lista_preco').value.split(' ')[0];
-    let listaId = parseInt(listaInput) || 1;
-
     document.querySelectorAll('input[name="material_id[]"]').forEach(function(input, index) {
-        let materialId = parseInt(input.value.split(' ')[0]);
+        let material = input.value;
         let qtd = parseFloat(document.getElementsByName('quantidade[]')[index].value) || 0;
-        let preco = (precos[listaId] && precos[listaId][materialId]) ? precos[listaId][materialId] : 0;
-        let subtotal = preco * qtd;
+        let preco = parseFloat(document.getElementsByName('preco_unitario[]')[index].value) || 0;
+        let subtotal = qtd * preco;
         total += subtotal;
 
-        html += `<div>${materialId} - Qtd: ${qtd} | R$ ${(preco).toFixed(2)} = R$ ${(subtotal).toFixed(2)}
+        html += `<div>${material} - Qtd: ${qtd} | R$ ${preco.toFixed(2)} = R$ ${subtotal.toFixed(2)}
             <span class="item-actions">
                 <button type="button" onclick="editarItem(${index})">✏️</button>
                 <button type="button" onclick="removerItem(${index})">🗑️</button>
-            </span>
-        </div>`;
+            </span></div>`;
     });
 
     document.getElementById('resumo_itens').innerHTML = html;
     document.getElementById('total_venda').innerText = total.toFixed(2);
 }
 
+function preencherPrecoAutomatico() {
+    let listaId = parseInt(document.getElementById('lista_preco').value.split(' ')[0]);
+    let materialId = parseInt(document.getElementById('material_input').value.split(' ')[0]);
+    if (precos[listaId] && precos[listaId][materialId]) {
+        document.getElementById('preco_input').value = precos[listaId][materialId];
+    }
+}
+
 function adicionarOuEditarItem() {
     let material = document.getElementById('material_input').value.trim();
     let quantidade = document.getElementById('quantidade_input').value;
+    let precoUnitario = document.getElementById('preco_input').value;
     let editIndex = document.getElementById('edit_index').value;
 
-    if (!material || quantidade <= 0) {
-        alert("Preencha material e quantidade corretamente");
+    if (!material || quantidade <= 0 || precoUnitario <= 0) {
+        alert("Preencha material, quantidade e preço corretamente");
         return;
     }
 
     if (editIndex !== '') {
         document.getElementsByName('material_id[]')[editIndex].value = material;
         document.getElementsByName('quantidade[]')[editIndex].value = quantidade;
+        document.getElementsByName('preco_unitario[]')[editIndex].value = precoUnitario;
         document.getElementById('edit_index').value = '';
     } else {
-        let inputMat = document.createElement('input');
-        inputMat.type = 'hidden';
-        inputMat.name = 'material_id[]';
-        inputMat.value = material;
-
-        let inputQtd = document.createElement('input');
-        inputQtd.type = 'hidden';
-        inputQtd.name = 'quantidade[]';
-        inputQtd.value = quantidade;
-
-        document.getElementById('formVenda').appendChild(inputMat);
-        document.getElementById('formVenda').appendChild(inputQtd);
+        ['material_id', 'quantidade', 'preco_unitario'].forEach(function(field) {
+            let input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = field + '[]';
+            input.value = (field === 'material_id') ? material : (field === 'quantidade' ? quantidade : precoUnitario);
+            document.getElementById('formVenda').appendChild(input);
+        });
     }
 
     document.getElementById('material_input').value = '';
     document.getElementById('quantidade_input').value = '';
+    document.getElementById('preco_input').value = '';
     document.getElementById('material_input').focus();
     atualizarResumo();
 }
@@ -213,6 +213,7 @@ function adicionarOuEditarItem() {
 function editarItem(index) {
     document.getElementById('material_input').value = document.getElementsByName('material_id[]')[index].value;
     document.getElementById('quantidade_input').value = document.getElementsByName('quantidade[]')[index].value;
+    document.getElementById('preco_input').value = document.getElementsByName('preco_unitario[]')[index].value;
     document.getElementById('edit_index').value = index;
     document.getElementById('material_input').focus();
 }
@@ -220,6 +221,7 @@ function editarItem(index) {
 function removerItem(index) {
     document.getElementsByName('material_id[]')[index].remove();
     document.getElementsByName('quantidade[]')[index].remove();
+    document.getElementsByName('preco_unitario[]')[index].remove();
     atualizarResumo();
 }
 
@@ -239,19 +241,13 @@ function atualizarModalPagamento() {
     if (totalPago < totalVenda) {
         aviso = "⚠️ Valor pago é menor que o total. Será gerado saldo devedor.";
         opcaoTroco.style.display = 'none';
-    } else if (totalPago > totalVenda) {
-        if (dinheiro > 0) {
-            aviso = "⚠️ Haverá troco no caixa.";
-            opcaoTroco.style.display = 'block';
-        } else {
-            aviso = "⚠️ Excesso será saldo para o cliente.";
-            opcaoTroco.style.display = 'none';
-        }
+    } else if (totalPago > totalVenda && dinheiro > 0) {
+        aviso = "⚠️ Haverá troco no caixa.";
+        opcaoTroco.style.display = 'block';
     } else {
         aviso = "✅ Pagamento exato.";
         opcaoTroco.style.display = 'none';
     }
-
     document.getElementById('aviso_pagamento').innerText = aviso;
 }
 
@@ -260,8 +256,8 @@ document.addEventListener('DOMContentLoaded', function() {
     autocomplete('lista_preco', listas_precos);
     autocomplete('material_input', materiais);
 
+    document.getElementById('material_input').addEventListener('blur', preencherPrecoAutomatico);
     document.getElementById('adicionarItemBtn').addEventListener('click', adicionarOuEditarItem);
-
     document.getElementById('btnAbrirModalPagamento').addEventListener('click', function() {
         atualizarResumo();
         atualizarModalPagamento();
@@ -274,16 +270,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('formVenda').addEventListener('keydown', function(event) {
         const activeEl = document.activeElement;
-        if (event.key === 'Enter') {
-            if (activeEl.tagName.toLowerCase() !== 'button') {
-                event.preventDefault();
-                let inputs = Array.from(this.querySelectorAll('input, button, textarea, select')).filter(el => !el.disabled && el.offsetParent !== null);
-                let index = inputs.indexOf(activeEl);
-                if (index > -1 && index < inputs.length - 1) {
-                    inputs[index + 1].focus();
-                }
+        if (event.key === 'Enter' && activeEl.tagName.toLowerCase() !== 'button') {
+            event.preventDefault();
+            let inputs = Array.from(this.querySelectorAll('input, button, textarea, select')).filter(el => !el.disabled && el.offsetParent !== null);
+            let index = inputs.indexOf(activeEl);
+            if (index > -1 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
             }
         }
     });
 });
 </script>
+
+<?php include __DIR__.'/includes/footer.php'; ?>
