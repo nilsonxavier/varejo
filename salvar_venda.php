@@ -27,12 +27,33 @@ $valor_pix = isset($_POST['valor_pix']) ? floatval($_POST['valor_pix']) : 0;
 $valor_cartao = isset($_POST['valor_cartao']) ? floatval($_POST['valor_cartao']) : 0;
 $gerar_troco = isset($_POST['gerar_troco']); // Checkbox opcional
 
-// Calcular total da venda com os preços realmente informados
+// Validação: Conferir se todos os materiais existem no banco
+$ids_verificar = array_map(function($m) {
+    return intval(explode(' ', $m)[0]); // Extrair apenas o ID
+}, $material_ids);
+
+$ids_verificar_str = implode(',', $ids_verificar);
+$result = $conn->query("SELECT id FROM materiais WHERE id IN ($ids_verificar_str)");
+
+$materiais_encontrados = [];
+while ($row = $result->fetch_assoc()) {
+    $materiais_encontrados[] = $row['id'];
+}
+
+foreach ($ids_verificar as $id) {
+    if (!in_array($id, $materiais_encontrados)) {
+        echo "<div class='alert alert-danger container mt-4'>Erro: Material ID $id não encontrado no banco de dados.</div>";
+        include __DIR__.'/includes/footer.php';
+        exit;
+    }
+}
+
+// Calcular total da venda
 $total = 0;
 $itens = [];
 
 foreach ($material_ids as $index => $material_id) {
-    $material_id = intval($material_id);
+    $material_id = intval(explode(' ', $material_id)[0]); // Extrair o ID numérico
     $quantidade = floatval($quantidades[$index]);
     $preco_unitario = floatval($precos_unitarios[$index]);
     $subtotal = $preco_unitario * $quantidade;
@@ -70,7 +91,7 @@ foreach ($itens as $item) {
     $stmt_item->execute();
 }
 
-// Registrar entradas no caixa (dinheiro recebido)
+// Registrar movimentação de entrada no caixa
 if ($valor_dinheiro > 0) {
     $stmt_caixa = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao) VALUES (?, 'entrada', ?, ?, ?)");
     $descricao = "Venda ID $venda_id - pagamento em dinheiro";
@@ -78,7 +99,7 @@ if ($valor_dinheiro > 0) {
     $stmt_caixa->execute();
 }
 
-// Se houve troco e foi marcado para gerar saída no caixa
+// Registrar o troco (se houver e se o usuário marcou)
 if ($diferenca > 0 && $valor_dinheiro > 0 && $gerar_troco) {
     $stmt_troco = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao) VALUES (?, 'saida', ?, ?, ?)");
     $descricao_troco = "Troco da Venda ID $venda_id";
@@ -86,14 +107,16 @@ if ($diferenca > 0 && $valor_dinheiro > 0 && $gerar_troco) {
     $stmt_troco->execute();
 }
 
-// Ajuste de saldo no cliente
+// Ajustar saldo do cliente (positivo ou negativo)
 if ($cliente_id) {
     $ajuste_saldo = 0;
 
     if ($diferenca < 0) {
-        $ajuste_saldo = $diferenca; // Valor pago menor que o total -> saldo devedor
-    } elseif ($diferenca > 0 && (! $gerar_troco || $valor_dinheiro <= 0)) {
-        $ajuste_saldo = $diferenca; // Excesso vai para o saldo, se não houver troco
+        // Cliente pagou menos
+        $ajuste_saldo = $diferenca;
+    } elseif ($diferenca > 0 && (!$gerar_troco || $valor_dinheiro <= 0)) {
+        // Cliente pagou mais, mas o troco não foi gerado (ou pagou por pix/cartão)
+        $ajuste_saldo = $diferenca;
     }
 
     if ($ajuste_saldo != 0) {
