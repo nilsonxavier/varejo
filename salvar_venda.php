@@ -1,9 +1,12 @@
 <?php
 require_once 'conexx/config.php';
+require_once 'verifica_login.php';
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
 
 $data_atual = date('Y-m-d H:i:s');
+
+$usuario_id = $_SESSION['usuario_id'];
 
 // Verificar caixa aberto
 $result = $conn->query("SELECT id FROM caixas WHERE status='aberto' LIMIT 1");
@@ -91,6 +94,13 @@ foreach ($itens as $item) {
     $stmt_item->execute();
 }
 
+// Excluir a venda suspensa referente a este usuário e cliente (ou venda sem cliente)
+if ($cliente_id) {
+    $conn->query("DELETE FROM vendas_suspensas WHERE usuario_id = $usuario_id AND cliente_id = $cliente_id");
+} else {
+    $conn->query("DELETE FROM vendas_suspensas WHERE usuario_id = $usuario_id AND cliente_id IS NULL");
+}
+
 // Registrar movimentação de entrada no caixa
 if ($valor_dinheiro > 0) {
     $stmt_caixa = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao) VALUES (?, 'entrada', ?, ?, ?)");
@@ -112,10 +122,8 @@ if ($cliente_id) {
     $ajuste_saldo = 0;
 
     if ($diferenca < 0) {
-        // Cliente pagou menos
         $ajuste_saldo = $diferenca;
     } elseif ($diferenca > 0 && (!$gerar_troco || $valor_dinheiro <= 0)) {
-        // Cliente pagou mais, mas o troco não foi gerado (ou pagou por pix/cartão)
         $ajuste_saldo = $diferenca;
     }
 

@@ -1,4 +1,6 @@
 <?php
+require_once 'verifica_login.php';
+// ... resto da página protegida ...
 require_once 'conexx/config.php';
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
@@ -30,6 +32,11 @@ $res = $conn->query("SELECT lista_id, material_id, preco FROM precos_materiais")
 while ($p = $res->fetch_assoc()) {
     $precos_materiais[$p['lista_id']][$p['material_id']] = floatval($p['preco']);
 }
+
+
+
+
+
 ?>
 
 <style>
@@ -130,6 +137,9 @@ var listas_precos = <?php echo json_encode($listas_precos_arr); ?>;
 var materiais = <?php echo json_encode($materiais_arr); ?>;
 var precos = <?php echo json_encode($precos_materiais); ?>;
 
+
+
+
 function autocomplete(inputId, dataArray) {
     const input = document.getElementById(inputId);
     input.addEventListener('input', function() {
@@ -146,6 +156,35 @@ function autocomplete(inputId, dataArray) {
         document.body.appendChild(datalist);
     });
 }
+
+function carregarVendaSuspensa(clienteId) {
+    fetch('recuperar_venda_temporaria.php?cliente_id=' + clienteId)
+    .then(r => r.json())
+    .then(data => {
+        // Limpa itens atuais sempre que troca cliente
+        document.querySelectorAll('input[name="material_id[]"], input[name="quantidade[]"], input[name="preco_unitario[]"]').forEach(e => e.remove());
+        atualizarResumo();
+
+        if (data.status === 'ok') {
+            let venda = JSON.parse(data.dados.venda_json);
+
+            if (venda.lista_preco_id) {
+                const lista = listas_precos.find(l => l.id == venda.lista_preco_id);
+                if (lista) document.getElementById('lista_preco').value = `${lista.id} - ${lista.nome}`;
+            }
+
+            if (venda.itens && Array.isArray(venda.itens)) {
+                venda.itens.forEach(item => {
+                    document.getElementById('material_input').value = item.material_id;
+                    document.getElementById('quantidade_input').value = item.quantidade;
+                    document.getElementById('preco_input').value = item.preco_unitario;
+                    adicionarOuEditarItem();
+                });
+            }
+        }
+    });
+}
+
 
 function atualizarResumo() {
     let total = 0;
@@ -189,7 +228,6 @@ function adicionarOuEditarItem() {
         return;
     }
 
-    // Validação: material precisa existir no banco
     let materialId = parseInt(material.split(' ')[0]);
     let materialExiste = materiais.some(function(item) {
         return item.id == materialId;
@@ -219,6 +257,8 @@ function adicionarOuEditarItem() {
     document.getElementById('preco_input').value = '';
     document.getElementById('material_input').focus();
     atualizarResumo();
+    salvarVendaTemporaria();
+    
 }
 
 function editarItem(index) {
@@ -241,8 +281,8 @@ function atualizarModalPagamento() {
     let dinheiro = parseFloat(document.getElementById('valor_dinheiro').value) || 0;
     let pix = parseFloat(document.getElementById('valor_pix').value) || 0;
     let cartao = parseFloat(document.getElementById('valor_cartao').value) || 0;
-
     let totalPago = dinheiro + pix + cartao;
+
     document.getElementById('modal_total_venda').innerText = totalVenda.toFixed(2);
     document.getElementById('modal_total_pago').innerText = totalPago.toFixed(2);
 
@@ -263,10 +303,41 @@ function atualizarModalPagamento() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+
+    fetch('recuperar_venda_temporaria.php')
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                let venda = JSON.parse(data.dados.venda_json);
+                if (venda.cliente_id) document.getElementById('cliente').value = venda.cliente_id;
+                if (venda.lista_preco_id) document.getElementById('lista_preco').value = venda.lista_preco_id;
+                venda.itens.forEach(item => {
+                    document.getElementById('material_input').value = item.material_id;
+                    document.getElementById('quantidade_input').value = item.quantidade;
+                    document.getElementById('preco_input').value = item.preco_unitario;
+                    adicionarOuEditarItem();
+                });
+            }
+        });
+
     autocomplete('cliente', clientes);
     autocomplete('lista_preco', listas_precos);
     autocomplete('material_input', materiais);
 
+    document.getElementById('cliente').addEventListener('blur', function() {
+        const valor = this.value.trim();
+        const idCliente = parseInt(valor.split(' ')[0]);
+        const clienteSelecionado = clientes.find(c => c.id == idCliente);
+        if (clienteSelecionado && clienteSelecionado.lista_preco_id) {
+            const lista = listas_precos.find(l => l.id == clienteSelecionado.lista_preco_id);
+            if (lista) {
+                document.getElementById('lista_preco').value = `${lista.id} - ${lista.nome}`;
+                preencherPrecoAutomatico();
+            }
+        }
+    });
+
+    document.getElementById('lista_preco').addEventListener('blur', preencherPrecoAutomatico);
     document.getElementById('material_input').addEventListener('blur', preencherPrecoAutomatico);
     document.getElementById('adicionarItemBtn').addEventListener('click', adicionarOuEditarItem);
     document.getElementById('btnAbrirModalPagamento').addEventListener('click', function() {
@@ -291,6 +362,76 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+
+
+
+document.getElementById('cliente').addEventListener('blur', function() {
+    const clienteValor = this.value.trim();
+    const clienteId = parseInt(clienteValor.split(' ')[0]);
+    if (clienteId) {
+        carregarVendaSuspensa(clienteId);
+    }
+});
+
+
+
+
+function salvarVendaTemporaria() {
+    const formData = new FormData(document.getElementById('formVenda'));
+    fetch('salvar_venda_temporaria.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        console.log(data.msg);
+    })
+    .catch(err => console.error('Erro ao salvar venda temporária:', err));
+}
+
+
+
+
+
+
+
+
+
+
+document.getElementById('cliente').addEventListener('input', function () {
+    const clienteValor = this.value.trim();
+    const clienteId = parseInt(clienteValor.split(' ')[0]);
+
+    if (!clienteId) {
+        // Se cliente for apagado, limpa tudo
+        limparResumoVenda();
+        return;
+    }
+
+    // Limpar os itens atuais antes de carregar outro cliente
+    document.querySelectorAll('input[name="material_id[]"], input[name="quantidade[]"], input[name="preco_unitario[]"]').forEach(e => e.remove());
+    atualizarResumo();
+
+    fetch(`recuperar_venda_temporaria_cliente.php?cliente_id=${clienteId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                let venda = JSON.parse(data.dados.venda_json);
+                if (venda.lista_preco_id) document.getElementById('lista_preco').value = venda.lista_preco_id;
+                venda.itens.forEach(item => {
+                    document.getElementById('material_input').value = item.material_id;
+                    document.getElementById('quantidade_input').value = item.quantidade;
+                    document.getElementById('preco_input').value = item.preco_unitario;
+                    adicionarOuEditarItem();
+                });
+            } else {
+                console.log('Nenhuma venda suspensa para o cliente.');
+            }
+        });
+});
+
+
 </script>
 
 <?php include __DIR__.'/includes/footer.php'; ?>
