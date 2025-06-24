@@ -241,7 +241,19 @@ function carregarVendaSuspensa(clienteId) {
 
 function atualizarResumo() {
     let total = 0;
-    let html = '';
+    let html = `
+        <table style="width:100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+            <thead>
+                <tr style="background-color: #f0f0f0;">
+                    <th style="text-align: left; padding: 8px; border-bottom: 2px solid #ccc;">Material</th>
+                    <th style="text-align: right; padding: 8px; border-bottom: 2px solid #ccc;">Qtd</th>
+                    <th style="text-align: right; padding: 8px; border-bottom: 2px solid #ccc;">Preço Unit.</th>
+                    <th style="text-align: right; padding: 8px; border-bottom: 2px solid #ccc;">Subtotal</th>
+                    <th style="padding: 8px; border-bottom: 2px solid #ccc;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
 
     document.querySelectorAll('input[name="material_id[]"]').forEach(function(input, index) {
         let materialId = parseInt(input.value.split(' ')[0]);
@@ -251,16 +263,29 @@ function atualizarResumo() {
         let subtotal = qtd * preco;
         total += subtotal;
 
-        html += `<div>${materialNome} - Qtd: ${qtd} | R$ ${preco.toFixed(2)} = R$ ${subtotal.toFixed(2)}
-            <span class="item-actions">
-                <button type="button" onclick="editarItem(${index})">✏️</button>
-                <button type="button" onclick="removerItem(${index})">🗑️</button>
-            </span></div>`;
+        html += `
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${materialNome}</td>
+                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #ddd;">${qtd}</td>
+                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #ddd;">R$ ${preco.toFixed(2)}</td>
+                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #ddd;">R$ ${subtotal.toFixed(2)}</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">
+                    <button type="button" onclick="editarItem(${index})" style="background:none; border:none; cursor:pointer;" title="Editar">✏️</button>
+                    <button type="button" onclick="removerItem(${index})" style="background:none; border:none; cursor:pointer; margin-left:8px;" title="Remover">🗑️</button>
+                </td>
+            </tr>
+        `;
     });
+
+    html += `
+            </tbody>
+        </table>
+    `;
 
     document.getElementById('resumo_itens').innerHTML = html;
     document.getElementById('total_venda').innerText = total.toFixed(2);
 }
+
 
 function preencherPrecoAutomatico() {
     let listaId = parseInt(document.getElementById('lista_preco').value.split(' ')[0]);
