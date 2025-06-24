@@ -1,9 +1,6 @@
 <?php
 require_once 'verifica_login.php';
-// ... resto da página protegida ...
 require_once 'conexx/config.php';
-
-
 
 $usuario_id = $_SESSION['usuario_id'];
 
@@ -14,6 +11,9 @@ $empresa_id = $userData ? $userData['empresa_id'] : null;
 
 // Pega os dados do POST
 $cliente_id = isset($_POST['cliente_id']) && trim($_POST['cliente_id']) !== '' ? intval($_POST['cliente_id']) : null;
+if ($cliente_id === 0) {
+    $cliente_id = null;
+}
 
 $lista_preco_id = isset($_POST['lista_preco_id']) ? intval($_POST['lista_preco_id']) : null;
 
@@ -37,25 +37,17 @@ $venda_json = json_encode([
     'itens' => $itens
 ], JSON_UNESCAPED_UNICODE);
 
-
-if ($cliente_id) {
-    // Limpa a venda suspensa anterior só desse cliente para este usuário
+// Apagar venda anterior para este cliente (ou sem cliente)
+if ($cliente_id !== null) {
     $conn->query("DELETE FROM vendas_suspensas WHERE usuario_id = $usuario_id AND cliente_id = $cliente_id");
 } else {
-    // Se não tem cliente, só mantém uma sem cliente por usuário
     $conn->query("DELETE FROM vendas_suspensas WHERE usuario_id = $usuario_id AND cliente_id IS NULL");
 }
 
-
-
-// Salva a nova venda suspensa
+// Salvar a nova venda suspensa
 $stmt = $conn->prepare("INSERT INTO vendas_suspensas (usuario_id, empresa_id, cliente_id, lista_preco_id, venda_json) VALUES (?, ?, ?, ?, ?)");
 $stmt->bind_param("iiiss", $usuario_id, $empresa_id, $cliente_id, $lista_preco_id, $venda_json);
-
-// Se cliente_id for NULL, ajuste manualmente:
-if ($cliente_id === null) {
-    $stmt->bind_param("iiiss", $usuario_id, $empresa_id, null, $lista_preco_id, $venda_json);
-}
-
 $stmt->execute();
 
+echo json_encode(['status' => 'ok', 'msg' => 'Venda suspensa salva com sucesso.']);
+?>
