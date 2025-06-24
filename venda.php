@@ -37,6 +37,38 @@ while ($p = $res->fetch_assoc()) {
 
 
 
+// Buscar vendas suspensas para exibir na lateral
+$vendas_suspensas_arr = [];
+$sqlSuspensas = "SELECT vs.id, vs.cliente_id, vs.venda_json, u.nome AS usuario, c.nome AS cliente_nome
+                 FROM vendas_suspensas vs
+                 LEFT JOIN usuarios u ON vs.usuario_id = u.id
+                 LEFT JOIN clientes c ON vs.cliente_id = c.id
+                 ORDER BY vs.id DESC";
+$resSuspensas = $conn->query($sqlSuspensas);
+while ($v = $resSuspensas->fetch_assoc()) {
+    $dadosVenda = json_decode($v['venda_json'], true);
+
+    $total_venda = 0;
+    if (isset($dadosVenda['itens'])) {
+        foreach ($dadosVenda['itens'] as $item) {
+            $total_venda += $item['quantidade'] * $item['preco_unitario'];
+        }
+    }
+
+    $vendas_suspensas_arr[] = [
+        'id' => $v['id'],
+        'usuario' => $v['usuario'],
+        'cliente' => $v['cliente_nome'] ?? 'Cliente nulo',
+        'cliente_id' => $v['cliente_id'],
+        'total' => $total_venda
+    ];
+}
+
+
+
+
+
+
 ?>
 
 <style>
@@ -129,6 +161,27 @@ while ($p = $res->fetch_assoc()) {
             </div>
         </div>
     </div>
+
+
+
+
+    <div class="section-card mt-3">
+    <h4>Vendas Suspensas</h4>
+    <?php foreach ($vendas_suspensas_arr as $venda): ?>
+        <div class="mb-2 border-bottom pb-2">
+            <strong><?php echo htmlspecialchars($venda['usuario']); ?></strong><br>
+            Cliente: <?php echo htmlspecialchars($venda['cliente']); ?><br>
+            Total: R$ <?php echo number_format($venda['total'], 2, ',', '.'); ?><br>
+            <button type="button" class="btn btn-sm btn-outline-primary mt-1" onclick="abrirVendaSuspensaPorId(<?php echo $venda['id']; ?>)">Abrir</button>
+
+            <button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="excluirVendaSuspensa(<?php echo $venda['id']; ?>)">Excluir</button>
+        </div>
+    <?php endforeach; ?>
+</div>
+
+
+
+
 </div>
 
 <script>
@@ -430,6 +483,88 @@ document.getElementById('cliente').addEventListener('input', function () {
             }
         });
 });
+
+
+
+
+function abrirVendaSuspensaPorId(vendaId) {
+    fetch('recuperar_venda_suspensa_por_id.php?id=' + vendaId)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                const venda = data.dados;
+
+                // Preencher cliente e lista de preço
+                if (venda.cliente_id) {
+                    document.getElementById('cliente').value = venda.cliente_id;
+                } else {
+                    document.getElementById('cliente').value = '';
+                }
+
+                if (venda.lista_preco_id) {
+                    const lista = listas_precos.find(l => l.id == venda.lista_preco_id);
+                    if (lista) {
+                        document.getElementById('lista_preco').value = `${lista.id} - ${lista.nome}`;
+                    }
+                }
+
+                // Limpar itens antigos
+                document.querySelectorAll('input[name="material_id[]"]').forEach(e => e.remove());
+                document.querySelectorAll('input[name="quantidade[]"]').forEach(e => e.remove());
+                document.querySelectorAll('input[name="preco_unitario[]"]').forEach(e => e.remove());
+
+                // Adicionar os itens da venda
+                if (venda.itens && Array.isArray(venda.itens)) {
+                    venda.itens.forEach(item => {
+                        ['material_id', 'quantidade', 'preco_unitario'].forEach(function(field) {
+                            let input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = field + '[]';
+                            if (field === 'material_id') {
+                                input.value = item.material_id;
+                            } else if (field === 'quantidade') {
+                                input.value = item.quantidade;
+                            } else {
+                                input.value = item.preco_unitario;
+                            }
+                            document.getElementById('formVenda').appendChild(input);
+                        });
+                    });
+                }
+
+                atualizarResumo();
+                //alert('Venda suspensa carregada!');
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            } else {
+                alert('Erro: ' + data.msg);
+            }
+        });
+}
+
+
+
+// Função para excluir uma venda suspensa
+function excluirVendaSuspensa(id) {
+    if (!confirm("Deseja excluir esta venda suspensa?")) return;
+
+    fetch('excluir_venda_suspensa.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'id=' + id
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            alert('Venda suspensa excluída.');
+            location.reload();
+        } else {
+            alert('Erro ao excluir.');
+        }
+    });
+}
 
 
 </script>
