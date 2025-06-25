@@ -91,10 +91,10 @@
                         Produção
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="producaoDropdown">
-                        <li><a class="dropdown-item" href="producao.php">Lista Sacolas</a></li>
+                        <li><a class="dropdown-item" href="producao.php">Lista</a></li>
                         <li><a class="dropdown-item" href="producao.php">Lista Bobinas</a></li>
                         <li><a class="dropdown-item" href="cadProducaoBobina.php">Cadastra Bobina</a></li>
-                        <li><a class="dropdown-item" href="cadProducaoSacola.php">Cadastra Sacola</a></li>
+                        <li><a class="dropdown-item" href="estoque.php">Estoque</a></li>
 
                     </ul>
                 </li>
