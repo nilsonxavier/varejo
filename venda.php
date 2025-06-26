@@ -379,6 +379,10 @@ function atualizarModalPagamento() {
     } else if (totalPago > totalVenda && dinheiro > 0) {
         aviso = "⚠️ Haverá troco no caixa.";
         opcaoTroco.style.display = 'block';
+    } else if(totalPago > totalVenda) {
+        aviso = "⚠️ Haverá saldo positivo no cliente.";
+        opcaoTroco.style.display = 'none';
+    
     } else {
         aviso = "✅ Pagamento exato.";
         opcaoTroco.style.display = 'none';
@@ -510,7 +514,7 @@ document.getElementById('cliente').addEventListener('input', function () {
                     adicionarOuEditarItem();
                 });
             } else {
-                console.log('Nenhuma venda suspensa para o cliente.');
+                console.log('Nenhuma venda aberta para o cliente.');
             }
         });
 });
@@ -581,8 +585,8 @@ function abrirVendaSuspensaPorId(vendaId) {
             }
         })
         .catch(error => {
-            console.error('Erro ao buscar a venda suspensa:', error);
-            alert('Erro ao buscar a venda suspensa.');
+            console.error('Erro ao buscar a venda aberta:', error);
+            alert('Erro ao buscar a venda aberta.');
         });
 }
 
@@ -591,7 +595,7 @@ function abrirVendaSuspensaPorId(vendaId) {
 
 // Função para excluir uma venda suspensa
 function excluirVendaSuspensa(id) {
-    if (!confirm("Deseja excluir esta venda suspensa?")) return;
+    if (!confirm("Deseja excluir esta venda aberta?")) return;
 
     fetch('excluir_venda_suspensa.php', {
         method: 'POST',
@@ -601,7 +605,7 @@ function excluirVendaSuspensa(id) {
     .then(r => r.json())
     .then(data => {
         if (data.status === 'ok') {
-            alert('Venda suspensa excluída.');
+            alert('Venda aberta excluída.');
             location.reload();
         } else {
             alert('Erro ao excluir.');

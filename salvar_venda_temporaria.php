@@ -40,9 +40,9 @@ $venda_json = json_encode([
 // Apagar venda anterior para este cliente (ou sem cliente)
 if ($cliente_id !== null) {
     $conn->query("DELETE FROM vendas_suspensas WHERE usuario_id = $usuario_id AND cliente_id = $cliente_id");
-} else {
-    $conn->query("DELETE FROM vendas_suspensas WHERE usuario_id = $usuario_id AND cliente_id IS NULL");
-}
+ } //parte que da o limite de vendas abertas sem cliente por user -- else {
+//     $conn->query("DELETE FROM vendas_suspensas WHERE usuario_id = $usuario_id AND cliente_id IS NULL");
+// }
 
 // Salvar a nova venda suspensa
 $stmt = $conn->prepare("INSERT INTO vendas_suspensas (usuario_id, empresa_id, cliente_id, lista_preco_id, venda_json) VALUES (?, ?, ?, ?, ?)");
