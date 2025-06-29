@@ -94,8 +94,7 @@ include __DIR__.'/includes/footer.php';
 
 <div class="container py-4">
 
-    <!-- Formulário de Cadastro -->
-    <div class="section-card">
+    <!-- <div class="section-card">
         <h2><i class="bi bi-person-plus"></i> Cadastro de Clientes</h2>
         <form method="post">
             <div class="mb-3">
@@ -138,6 +137,66 @@ include __DIR__.'/includes/footer.php';
                 <i class="bi bi-check-circle"></i> Cadastrar Cliente
             </button>
         </form>
+    </div> -->
+
+    <!-- Botão para abrir o modal -->
+    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#cadastroClienteModal">
+        <i class="bi bi-person-plus"></i> Novo Cliente
+    </button>
+
+    <!-- Modal de Cadastro de Cliente -->
+    <div class="modal fade" id="cadastroClienteModal" tabindex="-1" aria-labelledby="cadastroClienteModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="cadastroClienteModalLabel"><i class="bi bi-person-plus"></i> Cadastro de Clientes</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <form method="post">
+                <div class="mb-3">
+                    <label>Nome do Cliente:</label>
+                    <input type="text" name="nome" class="form-control" placeholder="Ex: João Silva" required>
+                </div>
+                <div class="mb-3">
+                    <label>Telefone:</label>
+                    <input type="text" name="telefone" class="form-control" placeholder="Ex: (11) 99999-9999">
+                </div>
+                <div class="mb-3">
+                    <label>Email:</label>
+                    <input type="email" name="email" class="form-control" placeholder="Ex: joao@email.com">
+                </div>
+                <div class="mb-3">
+                    <label>CPF:</label>
+                    <input type="text" name="cpf" class="form-control" placeholder="Ex: 000.000.000-00">
+                </div>
+                <div class="mb-3">
+                    <label>Endereço:</label>
+                    <input type="text" name="endereco" class="form-control" placeholder="Ex: Rua Exemplo, 123">
+                </div>
+                <div class="mb-3">
+                    <label>CEP:</label>
+                    <input type="text" name="cep" class="form-control" placeholder="Ex: 00000-000">
+                </div>
+                <div class="mb-3">
+                    <label>Lista de Preço:</label>
+                    <select name="lista_preco_id" class="form-select">
+                        <option value="">Selecione uma Lista</option>
+                        <?php
+                        $listas = $conn->query("SELECT * FROM listas_precos ORDER BY nome");
+                        while ($l = $listas->fetch_assoc()) {
+                            echo "<option value='{$l['id']}'>{$l['nome']}</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+                <button type="submit" name="adicionar_cliente" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Cadastrar Cliente
+                </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Lista de Clientes -->
