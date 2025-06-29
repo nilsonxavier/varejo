@@ -1,5 +1,8 @@
 <?php
 require_once 'conexx/config.php';
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // Habilita exceções
+
+$erro_cadastro = '';
 
 // Adicionar Cliente
 if (isset($_POST['adicionar_cliente'])) {
@@ -14,10 +17,18 @@ if (isset($_POST['adicionar_cliente'])) {
     if ($nome != '') {
         $stmt = $conn->prepare("INSERT INTO clientes (nome, telefone, email, cpf, endereco, cep, lista_preco_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("ssssssi", $nome, $telefone, $email, $cpf, $endereco, $cep, $lista_preco_id);
-        $stmt->execute();
+        try {
+            $stmt->execute();
+            header("Location: cadastro_clientes.php");
+            exit;
+        } catch (mysqli_sql_exception $e) {
+            if ($e->getCode() == 1062) {
+                $erro_cadastro = "CPF já cadastrado.";
+            } else {
+                $erro_cadastro = "Erro ao cadastrar cliente: " . $e->getMessage();
+            }
+        }
     }
-    header("Location: cadastro_clientes.php");
-    exit;
 }
 
 // Excluir Cliente
@@ -34,6 +45,7 @@ include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
 include __DIR__.'/includes/footer.php';
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -94,50 +106,7 @@ include __DIR__.'/includes/footer.php';
 
 <div class="container py-4">
 
-    <!-- <div class="section-card">
-        <h2><i class="bi bi-person-plus"></i> Cadastro de Clientes</h2>
-        <form method="post">
-            <div class="mb-3">
-                <label>Nome do Cliente:</label>
-                <input type="text" name="nome" class="form-control" placeholder="Ex: João Silva" required>
-            </div>
-            <div class="mb-3">
-                <label>Telefone:</label>
-                <input type="text" name="telefone" class="form-control" placeholder="Ex: (11) 99999-9999">
-            </div>
-            <div class="mb-3">
-                <label>Email:</label>
-                <input type="email" name="email" class="form-control" placeholder="Ex: joao@email.com">
-            </div>
-            <div class="mb-3">
-                <label>CPF:</label>
-                <input type="text" name="cpf" class="form-control" placeholder="Ex: 000.000.000-00">
-            </div>
-            <div class="mb-3">
-                <label>Endereço:</label>
-                <input type="text" name="endereco" class="form-control" placeholder="Ex: Rua Exemplo, 123">
-            </div>
-            <div class="mb-3">
-                <label>CEP:</label>
-                <input type="text" name="cep" class="form-control" placeholder="Ex: 00000-000">
-            </div>
-            <div class="mb-3">
-                <label>Lista de Preço:</label>
-                <select name="lista_preco_id" class="form-select">
-                    <option value="">Selecione uma Lista</option>
-                    <?php
-                    $listas = $conn->query("SELECT * FROM listas_precos ORDER BY nome");
-                    while ($l = $listas->fetch_assoc()) {
-                        echo "<option value='{$l['id']}'>{$l['nome']}</option>";
-                    }
-                    ?>
-                </select>
-            </div>
-            <button type="submit" name="adicionar_cliente" class="btn btn-success">
-                <i class="bi bi-check-circle"></i> Cadastrar Cliente
-            </button>
-        </form>
-    </div> -->
+   
 
     <!-- Botão para abrir o modal -->
     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#cadastroClienteModal">
@@ -153,47 +122,61 @@ include __DIR__.'/includes/footer.php';
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
           </div>
           <div class="modal-body">
+            <?php if ($erro_cadastro): ?>
+                <div class="alert alert-danger">
+                    <?= htmlspecialchars($erro_cadastro) ?>
+                </div>
+            <?php endif; ?>
+
             <form method="post">
-                <div class="mb-3">
-                    <label>Nome do Cliente:</label>
-                    <input type="text" name="nome" class="form-control" placeholder="Ex: João Silva" required>
-                </div>
-                <div class="mb-3">
-                    <label>Telefone:</label>
-                    <input type="text" name="telefone" class="form-control" placeholder="Ex: (11) 99999-9999">
-                </div>
-                <div class="mb-3">
-                    <label>Email:</label>
-                    <input type="email" name="email" class="form-control" placeholder="Ex: joao@email.com">
-                </div>
-                <div class="mb-3">
-                    <label>CPF:</label>
-                    <input type="text" name="cpf" class="form-control" placeholder="Ex: 000.000.000-00">
-                </div>
-                <div class="mb-3">
-                    <label>Endereço:</label>
-                    <input type="text" name="endereco" class="form-control" placeholder="Ex: Rua Exemplo, 123">
-                </div>
-                <div class="mb-3">
-                    <label>CEP:</label>
-                    <input type="text" name="cep" class="form-control" placeholder="Ex: 00000-000">
-                </div>
-                <div class="mb-3">
-                    <label>Lista de Preço:</label>
-                    <select name="lista_preco_id" class="form-select">
-                        <option value="">Selecione uma Lista</option>
-                        <?php
-                        $listas = $conn->query("SELECT * FROM listas_precos ORDER BY nome");
-                        while ($l = $listas->fetch_assoc()) {
-                            echo "<option value='{$l['id']}'>{$l['nome']}</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-                <button type="submit" name="adicionar_cliente" class="btn btn-success">
-                    <i class="bi bi-check-circle"></i> Cadastrar Cliente
-                </button>
-            </form>
+    <div class="mb-3">
+        <label>Nome do Cliente:</label>
+        <input type="text" name="nome" class="form-control" placeholder="Ex: João Silva"
+               value="<?= htmlspecialchars($nome ?? '') ?>" required>
+    </div>
+    <div class="mb-3">
+        <label>Telefone:</label>
+        <input type="text" name="telefone" class="form-control" placeholder="Ex: (11) 99999-9999"
+               value="<?= htmlspecialchars($telefone ?? '') ?>">
+    </div>
+    <div class="mb-3">
+        <label>Email:</label>
+        <input type="email" name="email" class="form-control" placeholder="Ex: joao@email.com"
+               value="<?= htmlspecialchars($email ?? '') ?>">
+    </div>
+    <div class="mb-3">
+        <label>CPF:</label>
+        <input type="text" name="cpf" class="form-control" placeholder="Ex: 000.000.000-00"
+               value="<?= htmlspecialchars($cpf ?? '') ?>">
+    </div>
+    <div class="mb-3">
+        <label>Endereço:</label>
+        <input type="text" name="endereco" class="form-control" placeholder="Ex: Rua Exemplo, 123"
+               value="<?= htmlspecialchars($endereco ?? '') ?>">
+    </div>
+    <div class="mb-3">
+        <label>CEP:</label>
+        <input type="text" name="cep" class="form-control" placeholder="Ex: 00000-000"
+               value="<?= htmlspecialchars($cep ?? '') ?>">
+    </div>
+    <div class="mb-3">
+        <label>Lista de Preço:</label>
+        <select name="lista_preco_id" class="form-select">
+            <option value="">Selecione uma Lista</option>
+            <?php
+            $listas = $conn->query("SELECT * FROM listas_precos ORDER BY nome");
+            while ($l = $listas->fetch_assoc()) {
+                $selected = ($lista_preco_id ?? '') == $l['id'] ? 'selected' : '';
+                echo "<option value='{$l['id']}' $selected>{$l['nome']}</option>";
+            }
+            ?>
+        </select>
+    </div>
+    <button type="submit" name="adicionar_cliente" class="btn btn-success">
+        <i class="bi bi-check-circle"></i> Cadastrar Cliente
+    </button>
+</form>
+
           </div>
         </div>
       </div>
@@ -244,6 +227,14 @@ include __DIR__.'/includes/footer.php';
     </div>
 
 </div>
+<?php if ($erro_cadastro): ?>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var cadastroModal = new bootstrap.Modal(document.getElementById('cadastroClienteModal'));
+        cadastroModal.show();
+    });
+</script>
+<?php endif; ?>
 
 <!-- Bootstrap Icons -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
