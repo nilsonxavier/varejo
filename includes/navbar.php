@@ -52,7 +52,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
     <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">Nc Sacolas</a>
+        <a class="navbar-brand" href="index.php"><?php echo $_SESSION['empresa_nome']?></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03"
             aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Alternar navegação">
             <span class="navbar-toggler-icon"></span>
