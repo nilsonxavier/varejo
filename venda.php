@@ -6,8 +6,10 @@ include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
 
 // Clientes
+// Seleciona somente clientes da empresa do usuário logado
 $clientes_arr = [];
-$res = $conn->query("SELECT id, nome, lista_preco_id FROM clientes");
+$empresa_id = $_SESSION['usuario_empresa']; // Certifique-se que empresa_id está na sessão
+$res = $conn->query("SELECT id, nome, lista_preco_id FROM clientes WHERE empresa_id = " . intval($empresa_id));
 while ($c = $res->fetch_assoc()) {
     $clientes_arr[] = ["id" => $c['id'], "nome" => $c['nome'], "lista_preco_id" => $c['lista_preco_id']];
 }

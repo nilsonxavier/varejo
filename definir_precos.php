@@ -1,5 +1,8 @@
 <?php
 require_once 'conexx/config.php';
+require_once 'verifica_login.php';
+
+$empresa_id = $_SESSION['usuario_empresa'];
 
 $lista_id = intval($_GET['lista_id'] ?? 0);
 if ($lista_id <= 0) die("Lista inválida");
@@ -80,7 +83,8 @@ include __DIR__.'/includes/footer.php';
                     </thead>
                     <tbody>
                         <?php
-                        $materiais = $conn->query("SELECT * FROM materiais ORDER BY nome");
+                        // Mostra somente materiais da empresa do usuário
+                        $materiais = $conn->query("SELECT * FROM materiais WHERE empresa_id = $empresa_id ORDER BY nome");
                         while ($m = $materiais->fetch_assoc()):
                             $preco = $conn->query("SELECT preco FROM precos_materiais WHERE lista_id = $lista_id AND material_id = {$m['id']}")->fetch_assoc()['preco'] ?? '';
                         ?>

@@ -1,12 +1,15 @@
 <?php
 require_once 'conexx/config.php';
+require_once 'verifica_login.php';
+
+$empresa_id = $_SESSION['usuario_empresa'];
 
 // Adicionar Material
 if (isset($_POST['adicionar_material'])) {
     $nome_material = trim($_POST['nome_material']);
     if ($nome_material != '') {
-        $stmt = $conn->prepare("INSERT INTO materiais (nome) VALUES (?)");
-        $stmt->bind_param("s", $nome_material);
+        $stmt = $conn->prepare("INSERT INTO materiais (nome, empresa_id) VALUES (?, ?)");
+        $stmt->bind_param("ss", $nome_material, $empresa_id);
         $stmt->execute();
     }
     header("Location: cadastro_materiais.php");
@@ -17,8 +20,8 @@ if (isset($_POST['adicionar_material'])) {
 if (isset($_POST['criar_lista_precos'])) {
     $nome_lista = trim($_POST['nome_lista']);
     if ($nome_lista != '') {
-        $stmt = $conn->prepare("INSERT INTO listas_precos (nome) VALUES (?)");
-        $stmt->bind_param("s", $nome_lista);
+        $stmt = $conn->prepare("INSERT INTO listas_precos (nome, empresa_id) VALUES (?,?)");
+        $stmt->bind_param("ss", $nome_lista, $empresa_id);
         $stmt->execute();
         $nova_lista_id = $stmt->insert_id;
 
@@ -32,7 +35,7 @@ if (isset($_GET['excluir_lista'])) {
     $excluir_id = intval($_GET['excluir_lista']);
     if ($excluir_id > 0) {
         $conn->query("DELETE FROM precos_materiais WHERE lista_id = $excluir_id");
-        $conn->query("DELETE FROM listas_precos WHERE id = $excluir_id");
+        $conn->query("DELETE FROM listas_precos WHERE id = $excluir_id AND empresa_id = '$empresa_id'");
     }
     header("Location: cadastro_materiais.php");
     exit;
@@ -42,7 +45,7 @@ if (isset($_GET['excluir_lista'])) {
 if (isset($_GET['excluir_material'])) {
     $excluir_id = intval($_GET['excluir_material']);
     if ($excluir_id > 0) {
-        $conn->query("DELETE FROM materiais WHERE id = $excluir_id");
+        $conn->query("DELETE FROM materiais WHERE id = $excluir_id AND empresa_id = '$empresa_id'");
         $conn->query("DELETE FROM precos_materiais WHERE material_id = $excluir_id");
     }
     header("Location: cadastro_materiais.php");
@@ -99,7 +102,7 @@ include __DIR__.'/includes/footer.php';
 
         <h5 class="mt-4">Materiais Cadastrados:</h5>
         <?php
-        $materiais = $conn->query("SELECT * FROM materiais ORDER BY nome");
+        $materiais = $conn->query("SELECT * FROM materiais WHERE empresa_id = '$empresa_id' ORDER BY nome");
         if ($materiais->num_rows > 0) {
             echo "<ul class='list-group'>";
             while ($m = $materiais->fetch_assoc()) {
@@ -132,7 +135,7 @@ include __DIR__.'/includes/footer.php';
     <div class="section-card">
         <h2><i class="bi bi-list-ul"></i> Listas de Preços Existentes</h2>
         <?php
-        $listas = $conn->query("SELECT * FROM listas_precos ORDER BY created_at DESC");
+        $listas = $conn->query("SELECT * FROM listas_precos WHERE empresa_id = '$empresa_id' ORDER BY created_at DESC");
         if ($listas->num_rows > 0) {
             echo "<ul class='list-group'>";
             while ($l = $listas->fetch_assoc()) {
