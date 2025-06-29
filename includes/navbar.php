@@ -61,44 +61,34 @@
         <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
+                <!-- DROPDOW PRODUTOS -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="produtoDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
                         Produto
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="produtoDropdown">
-                        <li><a class="dropdown-item" href="produtos.php">Lista</a></li>
-                        <li><a class="dropdown-item" href="cadProdutos.php">Cadastra</a></li>
+                        <li><a class="dropdown-item" href="cadastro_materiais.php">Lista de preço Produtos</a></li>
+                        <li><a class="dropdown-item" href="cadastro_materiais.php">Produtos</a></li>
 
                     </ul>
                 </li>
 
+                <!-- DROPDOW CLIENTES -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="clienteDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
                         Cliente
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="clienteDropdown">
-                        <li><a class="dropdown-item" href="clientes.php">Lista</a></li>
-                        <li><a class="dropdown-item" href="cadClientes.php">Cadastra</a></li>
+                        <li><a class="dropdown-item" href="cadastro_clientes.php">Cadastra e Lista</a></li>
+                        <!-- <li><a class="dropdown-item" href="cadClientes.php">Cadastra</a></li> -->
 
                     </ul>
                 </li>
 
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="producaoDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        Produção
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="producaoDropdown">
-                        <li><a class="dropdown-item" href="producao.php">Lista</a></li>
-                        <li><a class="dropdown-item" href="producao.php">Lista Bobinas</a></li>
-                        <li><a class="dropdown-item" href="cadProducaoBobina.php">Cadastra Bobina</a></li>
-                        <li><a class="dropdown-item" href="estoque.php">Estoque</a></li>
 
-                    </ul>
-                </li>
-
+                <!-- VAREJO SO DESENVOLVIMENTO -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="vendasDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
@@ -113,6 +103,7 @@
                     </ul>
                 </li>
 
+                <!-- DROPDOW CONFIGURACOES  -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="configuracaoDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
