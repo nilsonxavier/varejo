@@ -121,7 +121,7 @@
                         ADMIN
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="admin">
-                        <li><a class="dropdown-item" href="gerenciar_usuarios.php">Usuarios</a></li>
+                        <li><a class="dropdown-item" href="gerenciar_usuariosRoot.php">Usuarios</a></li>
                         <li><a class="dropdown-item" href="gerenciar_empresas.php">Empresas</a></li>
 
                     </ul>

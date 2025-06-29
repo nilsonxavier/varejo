@@ -8,9 +8,6 @@ if ($_SESSION['usuario_tipo'] !== 'admin') {
     exit;
 }
 
-// Buscar empresas para o select
-$empresas = $conn->query("SELECT id, nome_fantasia FROM empresas ORDER BY nome_fantasia ASC");
-
 // Processamento
 if (isset($_POST['atualizar'])) {
     $id = intval($_POST['id']);
@@ -70,19 +67,27 @@ if (isset($_GET['excluir'])) {
     exit;
 }
 
-// Buscar para editar
+
 $editar_usuario = null;
 if (isset($_GET['editar'])) {
     $id_editar = intval($_GET['editar']);
-    $stmt = $conn->prepare("SELECT * FROM usuarios WHERE id = ?");
-    $stmt->bind_param("i", $id_editar);
+    $stmt = $conn->prepare("SELECT * FROM usuarios WHERE id = ? AND empresa_id = ?");
+    $stmt->bind_param("ii", $id_editar, $_SESSION['empresa_id']);
     $stmt->execute();
     $result = $stmt->get_result();
     $editar_usuario = $result->fetch_assoc();
 }
 
-// Lista
-$usuarios = $conn->query("SELECT usuarios.*, empresas.nome_fantasia AS empresa_nome_fantasia FROM usuarios LEFT JOIN empresas ON usuarios.empresa_id = empresas.id ORDER BY usuarios.id DESC");
+// Lista: mostrar apenas usuários da empresa logada
+$empresa_id = $_SESSION['usuario_empresa'];
+$stmtUsuarios = $conn->prepare("SELECT usuarios.*, empresas.nome_fantasia AS empresa_nome_fantasia FROM usuarios LEFT JOIN empresas ON usuarios.empresa_id = empresas.id WHERE usuarios.empresa_id = ? ORDER BY usuarios.id DESC");
+$stmtUsuarios->bind_param("i", $empresa_id);
+$stmtUsuarios->execute();
+$usuarios = $stmtUsuarios->get_result();
+
+
+
+
 
 // UI
 include __DIR__.'/includes/header.php';
@@ -128,14 +133,18 @@ include __DIR__.'/includes/navbar.php';
             </select>
         </div>
         <div class="col-md-2">
-            <select name="empresa_id" class="form-select" required>
-                <option value="">Selecione a empresa</option>
-                <?php while ($empresa = $empresas->fetch_assoc()): ?>
-                    <option value="<?= $empresa['id'] ?>" <?= ($editar_usuario['empresa_id'] ?? '') == $empresa['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($empresa['nome_fantasia']) ?>
-                    </option>
-                <?php endwhile; ?>
-            </select>
+            <input type="hidden" name="empresa_id" value="<?= $_SESSION['usuario_empresa'] ?>">
+            <input type="text" class="form-control" value="<?php
+                // Busca o nome da empresa do usuário logado
+                $empresa_nome = '';
+                $stmtEmpresa = $conn->prepare("SELECT nome_fantasia FROM empresas WHERE id = ?");
+                $stmtEmpresa->bind_param("i", $_SESSION['usuario_empresa']);
+                $stmtEmpresa->execute();
+                $stmtEmpresa->bind_result($empresa_nome);
+                $stmtEmpresa->fetch();
+                $stmtEmpresa->close();
+                echo htmlspecialchars($empresa_nome);
+            ?>" readonly>
         </div>
         <div class="col-md-2">
             <button type="submit" name="<?= $editar_usuario ? 'atualizar' : 'adicionar' ?>" class="btn btn-<?= $editar_usuario ? 'success' : 'primary' ?> w-100">
