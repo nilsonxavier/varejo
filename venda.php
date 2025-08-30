@@ -41,11 +41,15 @@ while ($p = $res->fetch_assoc()) {
 
 // Buscar vendas suspensas para exibir na lateral
 $vendas_suspensas_arr = [];
+// ...existing code...
+$empresa_id = $_SESSION['usuario_empresa'];
 $sqlSuspensas = "SELECT vs.id, vs.cliente_id, vs.venda_json, u.nome AS usuario, c.nome AS cliente_nome
                  FROM vendas_suspensas vs
                  LEFT JOIN usuarios u ON vs.usuario_id = u.id
                  LEFT JOIN clientes c ON vs.cliente_id = c.id
+                 WHERE c.empresa_id = " . intval($empresa_id) . "
                  ORDER BY vs.id DESC";
+// ...existing code...
 $resSuspensas = $conn->query($sqlSuspensas);
 while ($v = $resSuspensas->fetch_assoc()) {
     $dadosVenda = json_decode($v['venda_json'], true);
@@ -360,6 +364,7 @@ function removerItem(index) {
     document.getElementsByName('quantidade[]')[index].remove();
     document.getElementsByName('preco_unitario[]')[index].remove();
     atualizarResumo();
+    salvarVendaTemporaria(); //atualiza a venda temporária
 }
 
 function atualizarModalPagamento() {

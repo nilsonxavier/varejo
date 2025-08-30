@@ -1,5 +1,6 @@
 <?php
 require_once 'conexx/config.php';
+require_once 'verifica_login.php';
 
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
