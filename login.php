@@ -2,6 +2,9 @@
 require_once 'conexx/config.php';
 session_start();
 
+
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $senha = trim($_POST['senha']);
@@ -22,6 +25,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['usuario_nome'] = $usuario['nome'];
                 $_SESSION['usuario_tipo'] = $usuario['tipo'];
                 $_SESSION['usuario_empresa'] = $usuario['empresa_id'];
+
+                $empresa_nome = '';
+                $stmtEmpresa = $conn->prepare("SELECT nome_fantasia FROM empresas WHERE id = ?");
+                $stmtEmpresa->bind_param("i", $_SESSION['usuario_empresa']);
+                $stmtEmpresa->execute();
+                $stmtEmpresa->bind_result($empresa_nome);
+                $stmtEmpresa->fetch();
+                $stmtEmpresa->close();
+                $_SESSION['empresa_nome'] = $empresa_nome;
+                
                 header("Location: index.php");
                 exit;
             } else {

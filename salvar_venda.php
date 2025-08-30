@@ -6,9 +6,11 @@ include __DIR__.'/includes/navbar.php';
 
 $data_atual = date('Y-m-d H:i:s');
 $usuario_id = $_SESSION['usuario_id'];
+$empresa_id = $_SESSION['usuario_empresa'];
 
 // Verificar caixa aberto
-$result = $conn->query("SELECT id FROM caixas WHERE status='aberto' LIMIT 1");
+// Buscar caixa aberto da empresa
+$result = $conn->query("SELECT id FROM caixas WHERE status='aberto' AND empresa_id = " . intval($empresa_id) . " LIMIT 1");
 $caixa = $result->fetch_assoc();
 if (!$caixa) {
     echo "<div class='alert alert-danger container mt-4'>Não há caixa aberto. Venda cancelada.</div>";
@@ -113,42 +115,42 @@ if (!empty($itens_faltando) && !isset($_POST['forcar_venda'])) {
 $valor_pago = $valor_dinheiro + $valor_pix + $valor_cartao;
 $diferenca = $valor_pago - $total;
 
-$stmt = $conn->prepare("INSERT INTO vendas (cliente_id, lista_preco_id, total, valor_dinheiro, valor_pix, valor_cartao, valor_pago, data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("iiddddds", $cliente_id, $lista_preco_id, $total, $valor_dinheiro, $valor_pix, $valor_cartao, $valor_pago, $data_atual);
+$stmt = $conn->prepare("INSERT INTO vendas (cliente_id, lista_preco_id, total, valor_dinheiro, valor_pix, valor_cartao, valor_pago, data, empresa_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("iidddddsi", $cliente_id, $lista_preco_id, $total, $valor_dinheiro, $valor_pix, $valor_cartao, $valor_pago, $data_atual, $empresa_id);
 $stmt->execute();
 $venda_id = $stmt->insert_id;
 
 foreach ($itens as $item) {
-    $stmt_item = $conn->prepare("INSERT INTO vendas_itens (venda_id, material_id, quantidade, preco_unitario, subtotal) VALUES (?, ?, ?, ?, ?)");
-    $stmt_item->bind_param("iiddi", $venda_id, $item['material_id'], $item['quantidade'], $item['preco_unitario'], $item['subtotal']);
+    $stmt_item = $conn->prepare("INSERT INTO vendas_itens (venda_id, material_id, quantidade, preco_unitario, subtotal, empresa_id) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt_item->bind_param("iiddii", $venda_id, $item['material_id'], $item['quantidade'], $item['preco_unitario'], $item['subtotal'], $empresa_id);
     $stmt_item->execute();
 
     // Registrar movimentação de estoque
-    $stmt_estoque = $conn->prepare("INSERT INTO estoque (material_id, tipo, quantidade, data_movimentacao, descricao) VALUES (?, 'saida', ?, ?, ?)");
+    $stmt_estoque = $conn->prepare("INSERT INTO estoque (material_id, tipo, quantidade, data_movimentacao, descricao, empresa_id) VALUES (?, 'saida', ?, ?, ?, ?)");
     $descricao_estoque = "Venda ID $venda_id";
-    $stmt_estoque->bind_param("idss", $item['material_id'], $item['quantidade'], $data_atual, $descricao_estoque);
+    $stmt_estoque->bind_param("idssi", $item['material_id'], $item['quantidade'], $data_atual, $descricao_estoque, $empresa_id);
     $stmt_estoque->execute();
 }
 
 // Limpar venda suspensa
 if ($cliente_id) {
-    $conn->query("DELETE FROM vendas_suspensas WHERE usuario_id = $usuario_id AND cliente_id = $cliente_id");
+    $conn->query("DELETE FROM vendas_suspensas WHERE usuario_id = $usuario_id AND cliente_id = $cliente_id AND empresa_id = $empresa_id");
 } else {
-    $conn->query("DELETE FROM vendas_suspensas WHERE usuario_id = $usuario_id AND cliente_id IS NULL");
+    $conn->query("DELETE FROM vendas_suspensas WHERE usuario_id = $usuario_id AND cliente_id IS NULL AND empresa_id = $empresa_id");
 }
 
 // Movimentação no caixa
 if ($valor_dinheiro > 0) {
-    $stmt_caixa = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao) VALUES (?, 'entrada', ?, ?, ?)");
+    $stmt_caixa = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao, empresa_id) VALUES (?, 'entrada', ?, ?, ?, ?)");
     $descricao = "Venda ID $venda_id - pagamento em dinheiro";
-    $stmt_caixa->bind_param("idss", $caixa_id, $valor_dinheiro, $descricao, $data_atual);
+    $stmt_caixa->bind_param("idssi", $caixa_id, $valor_dinheiro, $descricao, $data_atual, $empresa_id);
     $stmt_caixa->execute();
 }
 
 if ($diferenca > 0 && $valor_dinheiro > 0 && $gerar_troco) {
-    $stmt_troco = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao) VALUES (?, 'saida', ?, ?, ?)");
+    $stmt_troco = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao, empresa_id) VALUES (?, 'saida', ?, ?, ?, ?)");
     $descricao_troco = "Troco da Venda ID $venda_id";
-    $stmt_troco->bind_param("idss", $caixa_id, $diferenca, $descricao_troco, $data_atual);
+    $stmt_troco->bind_param("idssi", $caixa_id, $diferenca, $descricao_troco, $data_atual, $empresa_id);
     $stmt_troco->execute();
 }
 

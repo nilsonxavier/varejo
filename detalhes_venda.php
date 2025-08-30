@@ -1,5 +1,6 @@
 <?php
 require_once 'conexx/config.php';
+require_once 'verifica_login.php';
 
 $venda_id = isset($_GET['venda_id']) ? intval($_GET['venda_id']) : 0;
 

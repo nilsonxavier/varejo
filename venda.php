@@ -6,8 +6,10 @@ include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
 
 // Clientes
+// Seleciona somente clientes da empresa do usuário logado
 $clientes_arr = [];
-$res = $conn->query("SELECT id, nome, lista_preco_id FROM clientes");
+$empresa_id = $_SESSION['usuario_empresa']; // Certifique-se que empresa_id está na sessão
+$res = $conn->query("SELECT id, nome, lista_preco_id FROM clientes WHERE empresa_id = " . intval($empresa_id));
 while ($c = $res->fetch_assoc()) {
     $clientes_arr[] = ["id" => $c['id'], "nome" => $c['nome'], "lista_preco_id" => $c['lista_preco_id']];
 }
@@ -39,11 +41,15 @@ while ($p = $res->fetch_assoc()) {
 
 // Buscar vendas suspensas para exibir na lateral
 $vendas_suspensas_arr = [];
+// ...existing code...
+$empresa_id = $_SESSION['usuario_empresa'];
 $sqlSuspensas = "SELECT vs.id, vs.cliente_id, vs.venda_json, u.nome AS usuario, c.nome AS cliente_nome
                  FROM vendas_suspensas vs
                  LEFT JOIN usuarios u ON vs.usuario_id = u.id
                  LEFT JOIN clientes c ON vs.cliente_id = c.id
+                 WHERE c.empresa_id = " . intval($empresa_id) . "
                  ORDER BY vs.id DESC";
+// ...existing code...
 $resSuspensas = $conn->query($sqlSuspensas);
 while ($v = $resSuspensas->fetch_assoc()) {
     $dadosVenda = json_decode($v['venda_json'], true);
@@ -358,6 +364,7 @@ function removerItem(index) {
     document.getElementsByName('quantidade[]')[index].remove();
     document.getElementsByName('preco_unitario[]')[index].remove();
     atualizarResumo();
+    salvarVendaTemporaria(); //atualiza a venda temporária
 }
 
 function atualizarModalPagamento() {
