@@ -6,9 +6,12 @@ include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
 
 // Buscar histórico de vendas
+// Buscar histórico de vendas apenas da empresa do usuário
+$empresa_id = $_SESSION['usuario_empresa'];
 $sql = "SELECT v.id, v.data, v.total, v.valor_pago, c.nome AS cliente_nome
         FROM vendas v
         LEFT JOIN clientes c ON v.cliente_id = c.id
+        WHERE c.empresa_id = " . intval($empresa_id) . "
         ORDER BY v.data DESC";
 $result = $conn->query($sql);
 ?>
