@@ -3,14 +3,15 @@ require_once 'verifica_login.php';
 require_once 'conexx/config.php';
 
 $usuario_id = $_SESSION['usuario_id'];
+$empresa_id = $_SESSION['usuario_empresa'];
 
 // Verifica se existe caixa aberto
-$caixa_aberto = $conn->query("SELECT * FROM caixas WHERE status = 'aberto' ORDER BY id DESC LIMIT 1")->fetch_assoc();
+$caixa_aberto = $conn->query("SELECT * FROM caixas WHERE status = 'aberto' AND empresa_id = " . intval($empresa_id) . " ORDER BY id DESC LIMIT 1")->fetch_assoc();
 
 // Abertura de caixa
 if (isset($_POST['abrir_caixa'])) {
     // Revalida para evitar duplicação
-    $existe_caixa_aberto = $conn->query("SELECT id FROM caixas WHERE status = 'aberto'")->num_rows;
+    $existe_caixa_aberto = $conn->query("SELECT id FROM caixas WHERE status = 'aberto' AND empresa_id = " . intval($empresa_id))->num_rows;
     if ($existe_caixa_aberto > 0) {
         header("Location: caixa.php");
         exit;
@@ -19,8 +20,8 @@ if (isset($_POST['abrir_caixa'])) {
     $valor_inicial = floatval($_POST['valor_inicial']);
     $data_abertura = date('Y-m-d H:i:s');
 
-    $stmt = $conn->prepare("INSERT INTO caixas (usuario_id, data_abertura, valor_inicial, status) VALUES (?, ?, ?, 'aberto')");
-    $stmt->bind_param("isd", $usuario_id, $data_abertura, $valor_inicial);
+    $stmt = $conn->prepare("INSERT INTO caixas (usuario_id, empresa_id, data_abertura, valor_inicial, status) VALUES (?, ?, ?, ?, 'aberto')");
+    $stmt->bind_param("iisd", $usuario_id, $empresa_id, $data_abertura, $valor_inicial);
     $stmt->execute();
     header("Location: caixa.php");
     exit;
@@ -204,7 +205,7 @@ include __DIR__.'/includes/footer.php';
                 </thead>
                 <tbody>
                     <?php
-                    $result = $conn->query("SELECT * FROM caixas WHERE status = 'fechado' ORDER BY id DESC LIMIT 10");
+                    $result = $conn->query("SELECT * FROM caixas WHERE status = 'fechado' AND empresa_id = " . intval($empresa_id) . " ORDER BY id DESC LIMIT 10");
                     while ($cx = $result->fetch_assoc()):
                     ?>
                         <tr>
