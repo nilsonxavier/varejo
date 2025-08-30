@@ -39,7 +39,7 @@ if (isset($_POST['atualizar'])) {
         $stmt->bind_param($types, ...$params);
         $stmt->execute();
     }
-    header("Location: gerenciar_usuarios.php?msg=atualizado");
+    header("Location: gerenciar_usuariosRoot.php?msg=atualizado");
     exit;
 }
 
@@ -170,10 +170,10 @@ include __DIR__.'/includes/navbar.php';
                         <td><?= htmlspecialchars($user['empresa_nome_fantasia'] ?? '-') ?></td>
                         <td class="text-end">
                             <?php if ($user['id'] !== $_SESSION['usuario_id']): ?>
-                                <a href="gerenciar_usuarios.php?editar=<?= $user['id'] ?>" class="btn btn-warning btn-sm">
+                                <a href="gerenciar_usuariosRoot.php?editar=<?= $user['id'] ?>" class="btn btn-warning btn-sm">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a href="gerenciar_usuarios.php?excluir=<?= $user['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Deseja realmente excluir este usuário?')">
+                                <a href="gerenciar_usuariosRoot.php?excluir=<?= $user['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Deseja realmente excluir este usuário?')">
                                     <i class="bi bi-trash"></i>
                                 </a>
                             <?php else: ?>
