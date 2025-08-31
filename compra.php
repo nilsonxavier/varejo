@@ -105,7 +105,7 @@ while ($p = $res->fetch_assoc()) {
 
                         <button type="button" id="adicionarItemBtn" class="btn btn-outline-primary w-100">Adicionar/Editar Item</button>
 
-                        <button type="submit" class="btn btn-success mt-3 w-100">Finalizar Compra</button>
+                        <button type="button" class="btn btn-success mt-3 w-100" id="btnAbrirModalPagamento">Finalizar Compra</button>
                     </form>
                 </div>
             </div>
@@ -372,6 +372,121 @@ document.addEventListener('DOMContentLoaded', function() {
             preencherPrecoFocus();
         }
     });
+});
+</script>
+
+<!-- Modal Pagamento (compra) -->
+<div class="modal fade" id="modalPagamentoCompra" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Formas de Pagamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Total da Compra: R$ <span id="modal_total_compra">0.00</span></h6>
+
+                <div class="mb-2">
+                    <label>Dinheiro:</label>
+                    <input type="number" step="0.01" name="valor_dinheiro" id="valor_dinheiro_compra" class="form-control">
+                </div>
+                <div class="mb-2">
+                    <label>Pix:</label>
+                    <input type="number" step="0.01" name="valor_pix" id="valor_pix_compra" class="form-control">
+                </div>
+                <div class="mb-2">
+                    <label>Cartão:</label>
+                    <input type="number" step="0.01" name="valor_cartao" id="valor_cartao_compra" class="form-control">
+                </div>
+
+                <h6>Total Pago: R$ <span id="modal_total_pago_compra">0.00</span></h6>
+                <div id="aviso_pagamento_compra" class="text-danger mt-2"></div>
+
+                <div id="opcao_troco_compra" class="form-check mt-2" style="display:none;">
+                    <input class="form-check-input" type="checkbox" name="gerar_troco" id="gerar_troco_compra" checked>
+                    <label class="form-check-label">Gerar troco no caixa (se desmarcar, vai para saldo do cliente)</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarPagamentoCompra">Confirmar Pagamento</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function atualizarModalPagamentoCompra() {
+        let totalCompra = parseFloat(document.getElementById('total_compra').innerText) || 0;
+        let dinheiro = parseFloat(document.getElementById('valor_dinheiro_compra').value) || 0;
+        let pix = parseFloat(document.getElementById('valor_pix_compra').value) || 0;
+        let cartao = parseFloat(document.getElementById('valor_cartao_compra').value) || 0;
+        let totalPago = dinheiro + pix + cartao;
+
+        document.getElementById('modal_total_compra').innerText = totalCompra.toFixed(2);
+        document.getElementById('modal_total_pago_compra').innerText = totalPago.toFixed(2);
+
+        let aviso = '';
+        let opcaoTroco = document.getElementById('opcao_troco_compra');
+
+        if (totalPago < totalCompra) {
+                aviso = "⚠️ Valor pago é menor que o total. Será gerado saldo devedor.";
+                opcaoTroco.style.display = 'none';
+        } else if (totalPago > totalCompra && dinheiro > 0) {
+                aviso = "⚠️ Haverá troco no caixa.";
+                opcaoTroco.style.display = 'block';
+        } else if (totalPago > totalCompra) {
+                aviso = "⚠️ Haverá saldo positivo no cliente.";
+                opcaoTroco.style.display = 'none';
+        } else {
+                aviso = "✅ Pagamento exato.";
+                opcaoTroco.style.display = 'none';
+        }
+        document.getElementById('aviso_pagamento_compra').innerText = aviso;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('btnAbrirModalPagamento').addEventListener('click', function(e) {
+                e.preventDefault();
+                atualizarModalPagamentoCompra();
+                new bootstrap.Modal(document.getElementById('modalPagamentoCompra')).show();
+        });
+
+        ['valor_dinheiro_compra', 'valor_pix_compra', 'valor_cartao_compra'].forEach(function(id) {
+                let el = document.getElementById(id);
+                if (el) el.addEventListener('input', atualizarModalPagamentoCompra);
+        });
+
+        document.getElementById('btnConfirmarPagamentoCompra').addEventListener('click', function() {
+                // Copia os campos para o form e submete
+                let form = document.getElementById('formCompra');
+                ['valor_dinheiro_compra', 'valor_pix_compra', 'valor_cartao_compra'].forEach(function(id) {
+                        let el = document.getElementById(id);
+                        let name = id.replace('_compra','');
+                        let existing = form.querySelector('input[name="' + name + '"]');
+                        if (existing) existing.value = el.value || 0;
+                        else {
+                                let h = document.createElement('input');
+                                h.type = 'hidden';
+                                h.name = name;
+                                h.value = el.value || 0;
+                                form.appendChild(h);
+                        }
+                });
+                // adicionar gerar_troco
+                let gerar = document.getElementById('gerar_troco_compra').checked ? 1 : 0;
+                let existingTroco = form.querySelector('input[name="gerar_troco"]');
+                if (existingTroco) existingTroco.value = gerar;
+                else {
+                        let h2 = document.createElement('input');
+                        h2.type = 'hidden';
+                        h2.name = 'gerar_troco';
+                        h2.value = gerar;
+                        form.appendChild(h2);
+                }
+
+                form.submit();
+        });
 });
 </script>
 

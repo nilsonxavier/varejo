@@ -69,7 +69,7 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="produtoDropdown">
                         <li><a class="dropdown-item" href="cadastro_materiais.php">Lista de preço Produtos</a></li>
-                        <li><a class="dropdown-item" href="cadastro_materiais.php">Produtos</a></li>
+                        <li><a class="dropdown-item" href="estoque.php">Estoque</a></li>
 
                     </ul>
                 </li>

@@ -2,14 +2,14 @@
 require_once 'conexx/config.php';
 require_once 'verifica_login.php';
 
-$empresa_id = $_SESSION['usuario_empresa'];
+$empresa_id = intval($_SESSION['usuario_empresa']);
 
 // Adicionar Material
 if (isset($_POST['adicionar_material'])) {
     $nome_material = trim($_POST['nome_material']);
     if ($nome_material != '') {
         $stmt = $conn->prepare("INSERT INTO materiais (nome, empresa_id) VALUES (?, ?)");
-        $stmt->bind_param("ss", $nome_material, $empresa_id);
+        $stmt->bind_param("si", $nome_material, $empresa_id);
         $stmt->execute();
     }
     header("Location: cadastro_materiais.php");
@@ -21,7 +21,7 @@ if (isset($_POST['criar_lista_precos'])) {
     $nome_lista = trim($_POST['nome_lista']);
     if ($nome_lista != '') {
         $stmt = $conn->prepare("INSERT INTO listas_precos (nome, empresa_id) VALUES (?,?)");
-        $stmt->bind_param("ss", $nome_lista, $empresa_id);
+        $stmt->bind_param("si", $nome_lista, $empresa_id);
         $stmt->execute();
         $nova_lista_id = $stmt->insert_id;
 
@@ -34,8 +34,20 @@ if (isset($_POST['criar_lista_precos'])) {
 if (isset($_GET['excluir_lista'])) {
     $excluir_id = intval($_GET['excluir_lista']);
     if ($excluir_id > 0) {
-        $conn->query("DELETE FROM precos_materiais WHERE lista_id = $excluir_id");
-        $conn->query("DELETE FROM listas_precos WHERE id = $excluir_id AND empresa_id = '$empresa_id'");
+        // Verifica se a lista pertence à empresa antes de excluir
+        $check = $conn->prepare("SELECT id FROM listas_precos WHERE id = ? AND empresa_id = ?");
+        $check->bind_param('ii', $excluir_id, $empresa_id);
+        $check->execute();
+        $resCheck = $check->get_result();
+        if ($resCheck->num_rows > 0) {
+            $del1 = $conn->prepare("DELETE FROM precos_materiais WHERE lista_id = ?");
+            $del1->bind_param('i', $excluir_id);
+            $del1->execute();
+
+            $del2 = $conn->prepare("DELETE FROM listas_precos WHERE id = ? AND empresa_id = ?");
+            $del2->bind_param('ii', $excluir_id, $empresa_id);
+            $del2->execute();
+        }
     }
     header("Location: cadastro_materiais.php");
     exit;
@@ -45,8 +57,20 @@ if (isset($_GET['excluir_lista'])) {
 if (isset($_GET['excluir_material'])) {
     $excluir_id = intval($_GET['excluir_material']);
     if ($excluir_id > 0) {
-        $conn->query("DELETE FROM materiais WHERE id = $excluir_id AND empresa_id = '$empresa_id'");
-        $conn->query("DELETE FROM precos_materiais WHERE material_id = $excluir_id");
+        // Verifica se o material pertence à empresa antes de excluir
+        $check = $conn->prepare("SELECT id FROM materiais WHERE id = ? AND empresa_id = ?");
+        $check->bind_param('ii', $excluir_id, $empresa_id);
+        $check->execute();
+        $resCheck = $check->get_result();
+        if ($resCheck->num_rows > 0) {
+            $del1 = $conn->prepare("DELETE FROM precos_materiais WHERE material_id = ?");
+            $del1->bind_param('i', $excluir_id);
+            $del1->execute();
+
+            $del2 = $conn->prepare("DELETE FROM materiais WHERE id = ? AND empresa_id = ?");
+            $del2->bind_param('ii', $excluir_id, $empresa_id);
+            $del2->execute();
+        }
     }
     header("Location: cadastro_materiais.php");
     exit;

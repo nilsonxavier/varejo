@@ -35,8 +35,8 @@ if (isset($_POST['registrar_movimentacao']) && $caixa_aberto) {
     $caixa_id = $caixa_aberto['id'];
     $data_movimentacao = date('Y-m-d H:i:s');
 
-    $stmt = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("isdss", $caixa_id, $tipo, $valor, $descricao, $data_movimentacao);
+    $stmt = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao, empresa_id) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("isdssi", $caixa_id, $tipo, $valor, $descricao, $data_movimentacao, $empresa_id);
     $stmt->execute();
 
     header("Location: caixa.php");

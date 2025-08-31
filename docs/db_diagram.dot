@@ -1,0 +1,30 @@
+digraph ER {
+  graph [rankdir=LR];
+  node [shape=record, fontsize=10, fontname="Verdana"];
+
+  CLIENTES [label="{CLIENTES|id PK\lnome\llista_preco_id\lempresa_id\l}"];
+  LISTAS_PRECOS [label="{LISTAS_PRECOS|id PK\lnome\lempresa_id\l}"];
+  PRECOS_MATERIAIS [label="{PRECOS_MATERIAIS|id PK\llista_id\lmaterial_id\lpreco\l}"];
+  MATERIAIS [label="{MATERIAIS|id PK\lnome\lempresa_id\l}"];
+  VENDAS [label="{VENDAS|id PK\lcliente_id\lempresa_id\llista_preco_id\ltotal\ldata\lvalor_dinheiro\lvalor_pix\lvalor_cartao\lvalor_pago\l}"];
+  VENDAS_ITENS [label="{VENDAS_ITENS|id PK\lvenda_id FK\lmaterial_id\lquantidade\lpreco_unitario\lsubtotal\lempresa_id\l}"];
+  COMPRAS [label="{COMPRAS|id PK\lcliente_id\lempresa_id\llista_preco_id\ltotal\ldata\lvalor_dinheiro\lvalor_pix\lvalor_cartao\lvalor_pago\lid_forma_pagamento\l}"];
+  COMPRAS_ITENS [label="{COMPRAS_ITENS|id PK\lcompra_id FK\lmaterial_id\lquantidade\lpreco_unitario\l}"];
+  CAIXAS [label="{CAIXAS|id PK\lusuario_id\lempresa_id\ldata_abertura\lvalor_inicial\ldata_fechamento\lvalor_final\lstatus\l}"];
+  MOVIMENTACOES [label="{MOVIMENTACOES|id PK\lcaixa_id FK\lempresa_id\ltipo\lvalor\ldescricao\ldata_movimentacao\l}"];
+  ESTOQUE [label="{ESTOQUE|id PK\lmaterial_id\ltipo\lquantidade\ldescricao\ldata_movimentacao\lempresa_id\l}"];
+  EMPRESAS [label="{EMPRESAS|id PK\lrazao_social\lnome_fantasia\l}"];
+
+  CLIENTES -> VENDAS [label="1..*", arrowhead=none, arrowtail=none];
+  CLIENTES -> COMPRAS [label="1..*", arrowhead=none, arrowtail=none];
+  VENDAS -> VENDAS_ITENS [label="1..*", dir=both];
+  COMPRAS -> COMPRAS_ITENS [label="1..*", dir=both];
+  LISTAS_PRECOS -> PRECOS_MATERIAIS [label="1..*", dir=both];
+  MATERIAIS -> PRECOS_MATERIAIS [label="1..*", dir=both];
+  MATERIAIS -> VENDAS_ITENS [label="1..*", dir=both];
+  MATERIAIS -> COMPRAS_ITENS [label="1..*", dir=both];
+  CAIXAS -> MOVIMENTACOES [label="1..*", dir=both];
+  EMPRESAS -> VENDAS [label="1..*", dir=both];
+  EMPRESAS -> COMPRAS [label="1..*", dir=both];
+  EMPRESAS -> MATERIAIS [label="1..*", dir=both];
+}
