@@ -19,9 +19,25 @@ $row = $result->fetch_assoc();
 
 $tabelaId = $row['tabela_preco_id'] ?? null;
 
-// Se cliente não tem tabela, usa a padrão (id = 1)
+// Se cliente não tem tabela, tenta buscar a lista padrão da empresa (recebe empresa_id via GET ou usa sessao)
 if (!$tabelaId) {
-    $tabelaId = 1;
+    $empresa_id = intval($_GET['empresa_id'] ?? ($_SESSION['usuario_empresa'] ?? 0));
+    $stmt_lp = $conn->prepare("SELECT id FROM listas_precos WHERE empresa_id = ? AND padrao = 1 LIMIT 1");
+    $stmt_lp->bind_param('i', $empresa_id);
+    $stmt_lp->execute();
+    $res_lp = $stmt_lp->get_result();
+    if ($res_lp && $r_lp = $res_lp->fetch_assoc()) {
+        $tabelaId = intval($r_lp['id']);
+    } else {
+        // fallback para primeira lista da empresa
+        $stmt_lp2 = $conn->prepare("SELECT id FROM listas_precos WHERE empresa_id = ? ORDER BY id LIMIT 1");
+        $stmt_lp2->bind_param('i', $empresa_id);
+        $stmt_lp2->execute();
+        $res_lp2 = $stmt_lp2->get_result();
+        if ($res_lp2 && $r_lp2 = $res_lp2->fetch_assoc()) $tabelaId = intval($r_lp2['id']);
+    }
+    // se ainda vazio, mantém 1 como último recurso
+    if (!$tabelaId) $tabelaId = 1;
 }
 
 // Buscar produtos com o preço da tabela do cliente

@@ -69,12 +69,23 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="produtoDropdown">
                         <li><a class="dropdown-item" href="cadastro_materiais.php">Lista de preço Produtos</a></li>
-                        <li><a class="dropdown-item" href="cadastro_materiais.php">Produtos</a></li>
+                        <li><a class="dropdown-item" href="estoque.php">Estoque</a></li>
 
                     </ul>
                 </li>
 
-                <!-- DROPDOW CLIENTES -->
+                <!-- DROPDOW Financeiro -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="financeiroDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Financeiro
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="financeiroDropdown">
+                        <li><a class="dropdown-item" href="caixa.php">Caixa</a></li>
+                     
+
+                    </ul>
+                </li><!-- DROPDOW CLIENTES -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="clienteDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
@@ -88,18 +99,28 @@
                 </li>
 
 
-                <!-- VAREJO SO DESENVOLVIMENTO -->
+                <!-- PDV Compra-->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="compraDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Compras
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="compraDropdown">
+                        <li><a class="dropdown-item" href="compra.php">Cad Compra</a></li>
+                        <li><a class="dropdown-item" href="historico_compras.php">Lista Compras</a></li>
+                    </ul>
+                </li>
+
+                <!-- PDV Vendas-->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="vendasDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        Varejo
+                        Vendas
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="vendasDropdown">
                         <li><a class="dropdown-item" href="venda.php">Cad Venda</a></li>
                         <li><a class="dropdown-item" href="historico_vendas.php">Lista Vendas</a></li>
-                        <li><a class="dropdown-item" href="cadastro_materiais.php">Tabela Preços</a></li>
-                        <li><a class="dropdown-item" href="cadastro_clientes.php">Clientes</a></li>
-
+                        
                     </ul>
                 </li>
 

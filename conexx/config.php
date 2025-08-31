@@ -19,5 +19,8 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Erro de conexão: " . $conn->connect_error);
 }
+// Ajusta o timezone da sessão MySQL para o fuso de Brasil (UTC-3)
+// Usa offset numérico para maior compatibilidade: -03:00
+$conn->query("SET time_zone = '-03:00'");
 // echo "Conexão bem-sucedida";
 ?>

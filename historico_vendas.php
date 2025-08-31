@@ -10,9 +10,12 @@ include __DIR__.'/includes/navbar.php';
 $empresa_id = $_SESSION['usuario_empresa'];
 $sql = "SELECT v.id, v.data, v.total, v.valor_pago, c.nome AS cliente_nome
         FROM vendas v
-        LEFT JOIN clientes c ON v.cliente_id = c.id
-        WHERE c.empresa_id = " . intval($empresa_id) . "
+        LEFT JOIN clientes c 
+            ON v.cliente_id = c.id 
+            AND c.empresa_id = " . intval($empresa_id) . "
+        WHERE v.empresa_id = " . intval($empresa_id) . "
         ORDER BY v.data DESC";
+
 $result = $conn->query($sql);
 ?>
 

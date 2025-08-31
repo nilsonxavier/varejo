@@ -32,7 +32,32 @@ function obterSaldoEstoque($conn, $material_id) {
 
 // Dados do formulário
 $cliente_id = isset($_POST['cliente_id']) ? intval($_POST['cliente_id']) : null;
-$lista_preco_id = intval($_POST['lista_preco_id']);
+// Determina a lista de preço a ser usada: POST > cliente > lista padrão da empresa > primeira lista da empresa
+$lista_preco_id = isset($_POST['lista_preco_id']) ? intval(explode(' ', $_POST['lista_preco_id'])[0]) : 0;
+if ($lista_preco_id <= 0) {
+    // tenta usar lista do cliente
+    if ($cliente_id) {
+        $row = $conn->query("SELECT lista_preco_id FROM clientes WHERE id = " . intval($cliente_id) . " LIMIT 1")->fetch_assoc();
+        if (!empty($row['lista_preco_id'])) $lista_preco_id = intval($row['lista_preco_id']);
+    }
+}
+if ($lista_preco_id <= 0) {
+    // tenta lista marcada como padrao para a empresa
+    $stmt_lp = $conn->prepare("SELECT id FROM listas_precos WHERE empresa_id = ? AND padrao = 1 LIMIT 1");
+    $stmt_lp->bind_param('i', $empresa_id);
+    $stmt_lp->execute();
+    $res_lp = $stmt_lp->get_result();
+    if ($res_lp && $r_lp = $res_lp->fetch_assoc()) {
+        $lista_preco_id = intval($r_lp['id']);
+    } else {
+        // fallback para primeira lista da empresa
+        $stmt_lp2 = $conn->prepare("SELECT id FROM listas_precos WHERE empresa_id = ? ORDER BY id LIMIT 1");
+        $stmt_lp2->bind_param('i', $empresa_id);
+        $stmt_lp2->execute();
+        $res_lp2 = $stmt_lp2->get_result();
+        if ($res_lp2 && $r_lp2 = $res_lp2->fetch_assoc()) $lista_preco_id = intval($r_lp2['id']);
+    }
+}
 $material_ids = $_POST['material_id'] ?? [];
 $quantidades = $_POST['quantidade'] ?? [];
 $precos_unitarios = $_POST['preco_unitario'] ?? [];
@@ -115,10 +140,44 @@ if (!empty($itens_faltando) && !isset($_POST['forcar_venda'])) {
 $valor_pago = $valor_dinheiro + $valor_pix + $valor_cartao;
 $diferenca = $valor_pago - $total;
 
-$stmt = $conn->prepare("INSERT INTO vendas (cliente_id, lista_preco_id, total, valor_dinheiro, valor_pix, valor_cartao, valor_pago, data, empresa_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("iidddddsi", $cliente_id, $lista_preco_id, $total, $valor_dinheiro, $valor_pix, $valor_cartao, $valor_pago, $data_atual, $empresa_id);
-$stmt->execute();
-$venda_id = $stmt->insert_id;
+$stmt = $conn->prepare("INSERT INTO vendas 
+    (cliente_id, lista_preco_id, total, valor_dinheiro, valor_pix, valor_cartao, valor_pago, data, empresa_id) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+$stmt->bind_param(
+    "iidddddsi", 
+    $cliente_id, 
+    $lista_preco_id, 
+    $total, 
+    $valor_dinheiro, 
+    $valor_pix, 
+    $valor_cartao, 
+    $valor_pago, 
+    $data_atual, 
+    $empresa_id
+);
+
+// tenta executar
+if ($stmt->execute()) {
+    $venda_id = $stmt->insert_id; // pega ID da venda
+    
+} else {
+    echo "<pre style='color:red'>";
+    echo "Erro ao inserir venda: " . $stmt->error . "\n";
+    echo "SQLSTATE: " . $stmt->sqlstate . "\n";
+    var_dump([
+        'cliente_id'     => $cliente_id,
+        'lista_preco_id' => $lista_preco_id,
+        'total'          => $total,
+        'valor_dinheiro' => $valor_dinheiro,
+        'valor_pix'      => $valor_pix,
+        'valor_cartao'   => $valor_cartao,
+        'valor_pago'     => $valor_pago,
+        'data'           => $data_atual,
+        'empresa_id'     => $empresa_id
+    ]);
+    echo "</pre>";
+}
 
 foreach ($itens as $item) {
     $stmt_item = $conn->prepare("INSERT INTO vendas_itens (venda_id, material_id, quantidade, preco_unitario, subtotal, empresa_id) VALUES (?, ?, ?, ?, ?, ?)");

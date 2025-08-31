@@ -1,0 +1,114 @@
+erDiagram
+    CLIENTES {
+      int id PK
+      varchar nome
+      int lista_preco_id
+      int empresa_id
+    }
+    LISTAS_PRECOS {
+      int id PK
+      varchar nome
+      int empresa_id
+    }
+    PRECOS_MATERIAIS {
+      int id PK
+      int lista_id
+      int material_id
+      decimal preco
+    }
+    MATERIAIS {
+      int id PK
+      varchar nome
+      int empresa_id
+    }
+    VENDAS {
+      int id PK
+      int cliente_id
+      int empresa_id
+      int lista_preco_id
+      decimal total
+      timestamp data
+      decimal valor_dinheiro
+      decimal valor_pix
+      decimal valor_cartao
+      decimal valor_pago
+    }
+    VENDAS_ITENS {
+      int id PK
+      int venda_id FK
+      int material_id
+      decimal quantidade
+      decimal preco_unitario
+      decimal subtotal
+      int empresa_id
+    }
+    COMPRAS {
+      int id PK
+      int cliente_id
+      int empresa_id
+      int lista_preco_id
+      decimal total
+      timestamp data
+      decimal valor_dinheiro
+      decimal valor_pix
+      decimal valor_cartao
+      decimal valor_pago
+      int id_forma_pagamento
+    }
+    COMPRAS_ITENS {
+      int id PK
+      int compra_id FK
+      int material_id
+      decimal quantidade
+      decimal preco_unitario
+    }
+    CAIXAS {
+      int id PK
+      int usuario_id
+      int empresa_id
+      datetime data_abertura
+      decimal valor_inicial
+      datetime data_fechamento
+      decimal valor_final
+      enum status
+    }
+    MOVIMENTACOES {
+      int id PK
+      int caixa_id FK
+      int empresa_id
+      enum tipo
+      decimal valor
+      varchar descricao
+      datetime data_movimentacao
+    }
+    ESTOQUE {
+      int id PK
+      int material_id
+      enum tipo
+      decimal quantidade
+      varchar descricao
+      datetime data_movimentacao
+      int empresa_id
+    }
+    EMPRESAS {
+      int id PK
+      varchar razao_social
+      varchar nome_fantasia
+    }
+
+    CLIENTES ||--o{ VENDAS : "faz"
+    CLIENTES ||--o{ COMPRAS : "faz"
+    VENDAS ||--o{ VENDAS_ITENS : "contém"
+    COMPRAS ||--o{ COMPRAS_ITENS : "contém"
+    LISTAS_PRECOS ||--o{ PRECOS_MATERIAIS : "tem"
+    MATERIAIS ||--o{ PRECOS_MATERIAIS : "tem"
+    MATERIAIS ||--o{ VENDAS_ITENS : "é_item"
+    MATERIAIS ||--o{ COMPRAS_ITENS : "é_item"
+    CAIXAS ||--o{ MOVIMENTACOES : "registra"
+    EMPRESAS ||--o{ VENDAS : "possui"
+    EMPRESAS ||--o{ COMPRAS : "possui"
+    EMPRESAS ||--o{ MATERIAIS : "possui"
+
+    %% Observações:
+    %% - `precos_materiais` fornece mapa lista->material->preco usado no front-end
+    %% - Itens devem ser persistidos em tabelas *_itens, não em JSON em compras/vendas

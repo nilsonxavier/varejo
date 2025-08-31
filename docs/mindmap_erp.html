@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Mapa Mental - ERP Varejo</title>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'forest' });
+  </script>
+</head>
+<body>
+  <div class="mermaid">
+    mindmap
+  root((ERP Varejo))
+    Autenticação
+      login.php
+      verifica_login.php
+      logout.php
+      Tabela: usuarios
+    Empresas
+      gerenciar_empresas.php
+      empresa_id (filtro por sessão)
+    Clientes
+      cadastro_clientes.php
+      listagemClientes.php
+      Tabela: clientes
+      campos: id, nome, lista_preco_id, empresa_id
+    Listas de Preço
+      definir_precos.php
+      tabelas: listas_precos, precos_materiais
+      uso: preencher preco automatico
+    Materiais / Produtos
+      cadastro_materiais.php
+      materiais (id, nome, empresa_id)
+    Vendas
+      venda.php
+      salvar_venda.php
+      vendas_itens
+      vendas_pagamentos
+      vendas_suspensas / temporarias
+      fluxo: selecionar cliente -> lista -> adicionar itens -> finalizar -> movimentacoes
+    Compras
+      compra.php
+      salvar_compra.php
+      compras_itens
+      fluxo: similar a venda (entrada estoque)
+    Caixa e Movimentações
+      caixa.php
+      detalhes_caixa.php
+      tabelas: caixas, movimentacoes, movimentos_caixa
+      integração com vendas/compras
+    Estoque
+      estoque.php
+      atualizar_estoque.php
+      tabela: estoque (entrada/saida por material)
+    Financeiro
+      contas_financeiras
+      formas_pagamento
+      vendas_pagamentos
+    Temporários / Carrinho
+      carrinho, vendas_temp, vendas_suspensas
+    APIs / AJAX
+      api/produtos.php
+      ajax/buscar_produto.php
+      recuperar_venda_temporaria.php
+    Administração
+      gerenciar_usuarios.php
+      gerenciar_usuariosRoot.php
+    Observações
+      - Preços carregados em JS: precos_materiais (mapa lista->material->preco)
+      - Padronizar nomes de colunas (cliente_id)
+      - Recomenda-se triggers PHP para atualizar estoque e registrar movimentacoes
+  </div>
+</body>
+</html>

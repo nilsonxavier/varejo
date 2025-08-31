@@ -1,0 +1,32 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "65.108.90.175",
+            "port": 3306,
+            "driver": "MariaDB",
+            "name": "lucinha",
+            "database": "lucinha",
+            "username": "nilson",
+            "password": "sua_senha"
+        },
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "bdd.elitevenda.com.br",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "erp",
+            "database": "erp",
+            "username": "nilsonxavier",
+            "password": "@Ni33213264%%8759"
+        }
+    ]
+}
