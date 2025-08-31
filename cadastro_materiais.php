@@ -20,14 +20,43 @@ if (isset($_POST['adicionar_material'])) {
 if (isset($_POST['criar_lista_precos'])) {
     $nome_lista = trim($_POST['nome_lista']);
     if ($nome_lista != '') {
-        $stmt = $conn->prepare("INSERT INTO listas_precos (nome, empresa_id) VALUES (?,?)");
-        $stmt->bind_param("si", $nome_lista, $empresa_id);
+        $is_padrao = isset($_POST['padrao']) ? 1 : 0;
+        // Se marca como padrão, removemos a marca de outras listas da mesma empresa
+        if ($is_padrao) {
+            $upd = $conn->prepare("UPDATE listas_precos SET padrao = 0 WHERE empresa_id = ?");
+            $upd->bind_param('i', $empresa_id);
+            $upd->execute();
+        }
+        $stmt = $conn->prepare("INSERT INTO listas_precos (nome, empresa_id, padrao) VALUES (?,?,?)");
+        $stmt->bind_param("sii", $nome_lista, $empresa_id, $is_padrao);
         $stmt->execute();
         $nova_lista_id = $stmt->insert_id;
 
         header("Location: definir_precos.php?lista_id=" . $nova_lista_id);
         exit;
     }
+}
+
+// Marcar/Desmarcar lista padrão via GET
+if (isset($_GET['acao']) && $_GET['acao'] === 'marcar_padrao' && isset($_GET['id'])) {
+    $lid = intval($_GET['id']);
+    // verifica propriedade
+    $chk = $conn->prepare("SELECT id FROM listas_precos WHERE id = ? AND empresa_id = ?");
+    $chk->bind_param('ii', $lid, $empresa_id);
+    $chk->execute();
+    $res = $chk->get_result();
+    if ($res->num_rows > 0) {
+        // tira padrao das outras
+        $upd0 = $conn->prepare("UPDATE listas_precos SET padrao = 0 WHERE empresa_id = ?");
+        $upd0->bind_param('i', $empresa_id);
+        $upd0->execute();
+        // seta padrao na escolhida
+        $upd1 = $conn->prepare("UPDATE listas_precos SET padrao = 1 WHERE id = ? AND empresa_id = ?");
+        $upd1->bind_param('ii', $lid, $empresa_id);
+        $upd1->execute();
+    }
+    header('Location: cadastro_materiais.php');
+    exit;
 }
 
 // Excluir Lista de Preços
@@ -163,13 +192,18 @@ include __DIR__.'/includes/footer.php';
         if ($listas->num_rows > 0) {
             echo "<ul class='list-group'>";
             while ($l = $listas->fetch_assoc()) {
+                $padrao_badge = $l['padrao'] == 1 ? "<span class='badge bg-success me-2'>Padrão</span>" : "";
+                $marcar_btn = $l['padrao'] == 1 ? "" : "<a href='cadastro_materiais.php?acao=marcar_padrao&id={$l['id']}' class='btn btn-outline-primary' title='Marcar como padrão'>Marcar Padrão</a>";
                 echo "<li class='list-group-item d-flex justify-content-between align-items-center'>
-                        <strong>{$l['nome']}</strong>
+                        <div>
+                            {$padrao_badge}<strong>{$l['nome']}</strong>
+                        </div>
                         <div class='btn-group btn-group-sm'>
                             <a href='definir_precos.php?lista_id={$l['id']}' class='btn btn-outline-secondary'>
                                 <i class='bi bi-pencil'></i> Editar Preços
                             </a>
-                            <a href='cadastro_materiais.php?excluir_lista={$l['id']}' class='btn btn-outline-danger' onclick=\"return confirm('Tem certeza que deseja excluir esta lista? Todos os preços vinculados serão apagados.')\">
+                            {$marcar_btn}
+                            <a href='cadastro_materiais.php?excluir_lista={$l['id']}' class='btn btn-outline-danger' onclick=\"return confirm('Tem certeza que deseja excluir esta lista? Todos os preços vinculados serão apagados.')\"> 
                                 <i class='bi bi-trash'></i> Excluir Lista
                             </a>
                         </div>

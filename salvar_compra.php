@@ -5,14 +5,40 @@ require_once 'conexx/config.php';
 // Recebe dados do formulário
 $cliente_id = isset($_POST['cliente_id']) ? intval(explode(' ', $_POST['cliente_id'])[0]) : 0;
 $lista_preco_id = isset($_POST['lista_preco_id']) ? intval(explode(' ', $_POST['lista_preco_id'])[0]) : 0;
+
+// Fallback para lista de preços: POST > cliente > padrao da empresa > primeira lista da empresa
+if ($lista_preco_id <= 0) {
+    if ($cliente_id) {
+        $cli_row = $conn->query("SELECT lista_preco_id FROM clientes WHERE id = " . intval($cliente_id) . " LIMIT 1")->fetch_assoc();
+        if (!empty($cli_row['lista_preco_id'])) $lista_preco_id = intval($cli_row['lista_preco_id']);
+    }
+}
+if ($lista_preco_id <= 0) {
+    $stmt_lp = $conn->prepare("SELECT id FROM listas_precos WHERE empresa_id = ? AND padrao = 1 LIMIT 1");
+    $stmt_lp->bind_param('i', $empresa_id);
+    $stmt_lp->execute();
+    $res_lp = $stmt_lp->get_result();
+    if ($res_lp && $r_lp = $res_lp->fetch_assoc()) {
+        $lista_preco_id = intval($r_lp['id']);
+    } else {
+        $stmt_lp2 = $conn->prepare("SELECT id FROM listas_precos WHERE empresa_id = ? ORDER BY id LIMIT 1");
+        $stmt_lp2->bind_param('i', $empresa_id);
+        $stmt_lp2->execute();
+        $res_lp2 = $stmt_lp2->get_result();
+        if ($res_lp2 && $r_lp2 = $res_lp2->fetch_assoc()) $lista_preco_id = intval($r_lp2['id']);
+    }
+}
 $empresa_id = $_SESSION['usuario_empresa'];
 
 $materiais = isset($_POST['material_id']) ? $_POST['material_id'] : [];
 $quantidades = isset($_POST['quantidade']) ? $_POST['quantidade'] : [];
 $precos = isset($_POST['preco_unitario']) ? $_POST['preco_unitario'] : [];
 
-if (!$cliente_id || !$empresa_id || count($materiais) == 0) {
-    echo '<div class="alert alert-danger">Dados inválidos!</div>';
+if (!$empresa_id || count($materiais) == 0) {
+    echo "<script>
+        alert('Erro: Dados inválidos!');
+        window.location.href = 'compra.php';
+    </script>";
     exit;
 }
 

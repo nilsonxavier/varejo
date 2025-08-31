@@ -21,6 +21,22 @@ while ($l = $res->fetch_assoc()) {
     $listas_precos_arr[] = ["id" => $l['id'], "nome" => $l['nome']];
 }
 
+// Determina lista padrão da empresa (usar padrao=1 ou primeira lista como fallback)
+$lista_preco_padrao = null;
+$stmt_lp = $conn->prepare("SELECT id, nome FROM listas_precos WHERE empresa_id = ? AND padrao = 1 LIMIT 1");
+$stmt_lp->bind_param('i', $empresa_id);
+$stmt_lp->execute();
+$res_lp = $stmt_lp->get_result();
+if ($res_lp && $r_lp = $res_lp->fetch_assoc()) {
+    $lista_preco_padrao = ['id' => intval($r_lp['id']), 'nome' => $r_lp['nome']];
+} else {
+    $stmt_lp2 = $conn->prepare("SELECT id, nome FROM listas_precos WHERE empresa_id = ? ORDER BY id LIMIT 1");
+    $stmt_lp2->bind_param('i', $empresa_id);
+    $stmt_lp2->execute();
+    $res_lp2 = $stmt_lp2->get_result();
+    if ($res_lp2 && $r_lp2 = $res_lp2->fetch_assoc()) $lista_preco_padrao = ['id' => intval($r_lp2['id']), 'nome' => $r_lp2['nome']];
+}
+
 // Materiais
 $materiais_arr = [];
 $res = $conn->query("SELECT id, nome FROM materiais");
@@ -201,6 +217,7 @@ var clientes = <?php echo json_encode($clientes_arr); ?>;
 var listas_precos = <?php echo json_encode($listas_precos_arr); ?>;
 var materiais = <?php echo json_encode($materiais_arr); ?>;
 var precos = <?php echo json_encode($precos_materiais); ?>;
+var lista_preco_padrao = <?php echo json_encode($lista_preco_padrao); ?>;
 
 
 
@@ -300,7 +317,19 @@ function atualizarResumo() {
 
 
 function preencherPrecoAutomatico() {
-    let listaId = parseInt(document.getElementById('lista_preco').value.split(' ')[0]);
+    // Determinar lista a usar: campo lista_preco > cliente selecionado > lista_preco_padrao
+    let listaVal = document.getElementById('lista_preco').value || '';
+    let listaId = parseInt(listaVal.split(' ')[0]);
+    if (!listaId) {
+        // tentar pegar lista do cliente
+        const clienteVal = document.getElementById('cliente').value || '';
+        const clienteId = parseInt(clienteVal.split(' ')[0]);
+        if (clienteId) {
+            const clienteObj = clientes.find(c => c.id == clienteId);
+            if (clienteObj && clienteObj.lista_preco_id) listaId = clienteObj.lista_preco_id;
+        }
+    }
+    if (!listaId && lista_preco_padrao && lista_preco_padrao.id) listaId = lista_preco_padrao.id;
     let materialId = parseInt(document.getElementById('material_input').value.split(' ')[0]);
     if (precos[listaId] && precos[listaId][materialId]) {
         document.getElementById('preco_input').value = precos[listaId][materialId];
