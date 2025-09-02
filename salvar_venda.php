@@ -31,7 +31,26 @@ function obterSaldoEstoque($conn, $material_id) {
 }
 
 // Dados do formulário
-$cliente_id = isset($_POST['cliente_id']) ? intval($_POST['cliente_id']) : null;
+// Cliente pode vir como '123 - Nome' ou apenas nome; tentar extrair ID, senão buscar pelo nome
+$cliente_raw = isset($_POST['cliente_id']) ? trim($_POST['cliente_id']) : '';
+$cliente_id = 0;
+if ($cliente_raw !== '') {
+    // tenta extrair número inicial
+    $possible_id = intval(explode(' ', $cliente_raw)[0]);
+    if ($possible_id > 0) {
+        $cliente_id = $possible_id;
+    } else {
+        // busca pelo nome (primeira ocorrência na mesma empresa)
+        $stmt_busca_cli = $conn->prepare("SELECT id FROM clientes WHERE empresa_id = ? AND (nome = ? OR nome LIKE ?) LIMIT 1");
+        $likeNome = '%' . $cliente_raw . '%';
+        $stmt_busca_cli->bind_param('iss', $empresa_id, $cliente_raw, $likeNome);
+        $stmt_busca_cli->execute();
+        $res_busca = $stmt_busca_cli->get_result();
+        if ($res_busca && $r_cli = $res_busca->fetch_assoc()) {
+            $cliente_id = intval($r_cli['id']);
+        }
+    }
+}
 // Determina a lista de preço a ser usada: POST > cliente > lista padrão da empresa > primeira lista da empresa
 $lista_preco_id = isset($_POST['lista_preco_id']) ? intval(explode(' ', $_POST['lista_preco_id'])[0]) : 0;
 if ($lista_preco_id <= 0) {
@@ -66,6 +85,10 @@ $valor_dinheiro = isset($_POST['valor_dinheiro']) ? floatval($_POST['valor_dinhe
 $valor_pix = isset($_POST['valor_pix']) ? floatval($_POST['valor_pix']) : 0;
 $valor_cartao = isset($_POST['valor_cartao']) ? floatval($_POST['valor_cartao']) : 0;
 $gerar_troco = isset($_POST['gerar_troco']);
+// Fiado
+$valor_fiado = isset($_POST['valor_fiado']) ? floatval($_POST['valor_fiado']) : 0;
+// Compatibilidade: considerar fiado quando foi enviado checkbox ou quando valor_fiado > 0
+$fiado_checked = (isset($_POST['fiado']) && $_POST['fiado']) || ($valor_fiado > 0);
 
 $ids_verificar = array_map(fn($m) => intval(explode(' ', $m)[0]), $material_ids);
 $ids_verificar_str = implode(',', $ids_verificar);
@@ -138,6 +161,8 @@ if (!empty($itens_faltando) && !isset($_POST['forcar_venda'])) {
 
 // Continuar com a venda
 $valor_pago = $valor_dinheiro + $valor_pix + $valor_cartao;
+// Se houver valor_fiado informado, consideramos como parte do total pago (mas não entra no caixa)
+$valor_pago += $valor_fiado;
 $diferenca = $valor_pago - $total;
 
 $stmt = $conn->prepare("INSERT INTO vendas 
@@ -199,6 +224,7 @@ if ($cliente_id) {
 }
 
 // Movimentação no caixa
+// Registrar entrada em caixa apenas para dinheiro (fiado não entra no caixa)
 if ($valor_dinheiro > 0) {
     $stmt_caixa = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao, empresa_id) VALUES (?, 'entrada', ?, ?, ?, ?)");
     $descricao = "Venda ID $venda_id - pagamento em dinheiro";
@@ -214,17 +240,70 @@ if ($diferenca > 0 && $valor_dinheiro > 0 && $gerar_troco) {
 }
 
 if ($cliente_id) {
-    $ajuste_saldo = 0;
-    if ($diferenca < 0) {
-        $ajuste_saldo = $diferenca;
-    } elseif ($diferenca > 0 && (!$gerar_troco || $valor_dinheiro <= 0)) {
-        $ajuste_saldo = $diferenca;
-    }
-    if ($ajuste_saldo != 0) {
+    // Se for fiado, registramos a dívida no saldo do cliente usando o valor informado em valor_fiado
+    if ($fiado_checked && $valor_fiado > 0) {
+        // Atualiza saldo: adiciona valor negativo (cliente devedor)
+        $neg = -1 * $valor_fiado;
         $stmt_saldo = $conn->prepare("UPDATE clientes SET saldo = saldo + ? WHERE id = ?");
-        $stmt_saldo->bind_param("di", $ajuste_saldo, $cliente_id);
+        $stmt_saldo->bind_param("di", $neg, $cliente_id);
         $stmt_saldo->execute();
+
+        // Buscar novo saldo e registrar movimentação de fiado
+        $res_saldo = $conn->query("SELECT saldo FROM clientes WHERE id = " . intval($cliente_id) . " LIMIT 1");
+        $novo_saldo = $res_saldo->fetch_assoc()['saldo'] ?? 0;
+        $tipo_mov = 'debito';
+        $valor_mov = $valor_fiado;
+        $descricao_mov = "Venda ID $venda_id - fiado";
+        $stmt_mov = $conn->prepare("INSERT INTO movimentacoes_clientes (cliente_id, tipo, valor, descricao, data_movimentacao, referencia_id, empresa_id, saldo_apos) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $data_mov = $data_atual;
+        $stmt_mov->bind_param('isdssiid', $cliente_id, $tipo_mov, $valor_mov, $descricao_mov, $data_mov, $venda_id, $empresa_id, $novo_saldo);
+        $stmt_mov->execute();
+
+    } else {
+        // comportamento padrão (sem fiado)
+        $ajuste_saldo = 0;
+        if ($diferenca < 0) {
+            $ajuste_saldo = $diferenca;
+        } elseif ($diferenca > 0 && (!$gerar_troco || $valor_dinheiro <= 0)) {
+            $ajuste_saldo = $diferenca;
+        }
+        if ($ajuste_saldo != 0) {
+            $stmt_saldo = $conn->prepare("UPDATE clientes SET saldo = saldo + ? WHERE id = ?");
+            $stmt_saldo->bind_param("di", $ajuste_saldo, $cliente_id);
+            $stmt_saldo->execute();
+        }
     }
+} else {
+    // sem cliente: se for marcado fiado, proibimos
+    if ($fiado_checked && $valor_fiado > 0) {
+        echo "<div class='alert alert-danger container mt-4'>Erro: Fiado requer cliente selecionado.</div>";
+        include __DIR__.'/includes/footer.php';
+        exit;
+    }
+}
+
+// Registrar movimentação do cliente para casos não-fiado (já foi registrada no bloco de fiado quando aplicável)
+if ($cliente_id && isset($ajuste_saldo) && $ajuste_saldo != 0 && !($fiado_checked && $valor_fiado > 0)) {
+    // buscar saldo atualizado
+    $res_saldo = $conn->query("SELECT saldo FROM clientes WHERE id = " . intval($cliente_id) . " LIMIT 1");
+    $novo_saldo = $res_saldo->fetch_assoc()['saldo'] ?? 0;
+
+    // definir tipo e valor para a movimentação
+    if ($ajuste_saldo < 0) {
+        $tipo_mov = 'debito'; // cliente ficou devedor
+        $valor_mov = abs($ajuste_saldo);
+        $descricao_mov = "Venda ID $venda_id - fiado";
+    } else {
+        $tipo_mov = 'credito';
+        $valor_mov = abs($ajuste_saldo);
+        $descricao_mov = "Venda ID $venda_id - pagamento excedente / troco";
+    }
+
+    $stmt_mov = $conn->prepare("INSERT INTO movimentacoes_clientes (cliente_id, tipo, valor, descricao, data_movimentacao, referencia_id, empresa_id, saldo_apos) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $data_mov = $data_atual;
+    // tipos: i=int(cliente_id), s=string(tipo), d=double(valor), s=string(descricao), s=string(data), i=int(referencia_id), i=int(empresa_id), d=double(saldo_apos)
+    $stmt_mov->bind_param('isdssiid', $cliente_id, $tipo_mov, $valor_mov, $descricao_mov, $data_mov, $venda_id, $empresa_id, $novo_saldo);
+    $stmt_mov->execute();
 }
 ?>
 

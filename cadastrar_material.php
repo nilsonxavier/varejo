@@ -33,7 +33,7 @@ if ($material_id > 0 && $quantidade_inicial > 0) {
     $data = date('Y-m-d H:i:s');
     $descricao = $descricao_inicial !== '' ? $descricao_inicial : 'Estoque inicial';
     $stmt2 = $conn->prepare("INSERT INTO estoque (material_id, tipo, quantidade, data_movimentacao, empresa_id, descricao) VALUES (?, 'entrada', ?, ?, ?, ?)");
-    $stmt2->bind_param('idiss', $material_id, $quantidade_inicial, $data, $empresa_id, $descricao);
+    $stmt2->bind_param('idssi', $material_id, $quantidade_inicial, $data, $empresa_id, $descricao);
     $stmt2->execute();
 }
 
