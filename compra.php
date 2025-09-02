@@ -35,9 +35,9 @@ if ($res_lp && $r_lp = $res_lp->fetch_assoc()) {
     if ($res_lp2 && $r_lp2 = $res_lp2->fetch_assoc()) $lista_preco_padrao = ['id' => intval($r_lp2['id']), 'nome' => $r_lp2['nome']];
 }
 
-// Materiais
+// Materiais (somente da empresa para melhorar performance)
 $materiais_arr = [];
-$res = $conn->query("SELECT id, nome FROM materiais");
+$res = $conn->query("SELECT id, nome FROM materiais WHERE empresa_id = " . intval($empresa_id));
 while ($m = $res->fetch_assoc()) {
     $materiais_arr[] = ["id" => $m['id'], "nome" => $m['nome']];
 }
@@ -108,14 +108,20 @@ while ($p = $res->fetch_assoc()) {
                     <form method="POST" action="salvar_compra.php" id="formCompra">
 
                         <label><strong>Cliente (ID ou Nome):</strong></label>
-                        <input type="text" name="cliente_id" id="cliente" class="form-control mb-2">
+                        <div style="position:relative;">
+                            <input type="text" name="cliente_id" id="cliente" class="form-control mb-2">
+                            <ul id="dropdown-clientes" class="list-group" style="position:absolute; left:0; top:100%; width:100%; z-index:9999; display:none; max-height:220px; overflow-y:auto;"></ul>
+                        </div>
 
                         <label><strong>Lista de Preços:</strong></label>
                         <input type="text" name="lista_preco_id" id="lista_preco" class="form-control mb-2">
 
                         <h5>Adicionar Item:</h5>
                         <input type="hidden" id="edit_index" value="">
-                        <input type="text" id="material_input" class="form-control mb-2" placeholder="Material (ID ou Nome)">
+                        <div style="position:relative;">
+                            <input type="text" id="material_input" class="form-control mb-2" placeholder="Material (ID ou Nome)">
+                            <ul id="dropdown-materiais" class="list-group" style="position:absolute; left:0; top:100%; width:100%; z-index:9999; display:none; max-height:220px; overflow-y:auto;"></ul>
+                        </div>
                         <input type="number" id="quantidade_input" class="form-control mb-2" placeholder="Quantidade" step="0.01" min="0">
                         <input type="number" id="preco_input" class="form-control mb-2" placeholder="Preço Unitário" step="0.01" min="0">
 
@@ -157,277 +163,214 @@ while ($p = $res->fetch_assoc()) {
 var clientes = <?php echo json_encode($clientes_arr); ?>;
 var listas_precos = <?php echo json_encode($listas_precos_arr); ?>;
 var materiais = <?php echo json_encode($materiais_arr); ?>;
+var empresa_id = <?php echo json_encode($empresa_id); ?>;
 var precos = <?php echo json_encode($precos_materiais); ?>;
 var lista_preco_padrao = <?php echo json_encode($lista_preco_padrao); ?>;
 
-function autocomplete(inputId, dataArray) {
-    const input = document.getElementById(inputId);
-    input.addEventListener('input', function() {
-        let term = this.value.toLowerCase();
-        let options = dataArray.filter(function(item) {
-            return item.nome.toLowerCase().includes(term) || String(item.id).includes(term);
-        }).map(function(item) {
-            return item.id + " - " + item.nome;
-        });
-        input.setAttribute('list', inputId + '_list');
-        let datalist = document.getElementById(inputId + '_list') || document.createElement('datalist');
-        datalist.id = inputId + '_list';
-        datalist.innerHTML = options.map(opt => `<option value="${opt}">`).join('');
-        document.body.appendChild(datalist);
-    });
-}
-
-function atualizarResumo() {
-    let total = 0;
-    let html = `
-        <table style="width:100%; border-collapse: collapse; font-family: Arial, sans-serif;">
-            <thead>
-                <tr style="background-color: #f0f0f0;">
-                    <th style="text-align: left; padding: 8px; border-bottom: 2px solid #ccc;">Material</th>
-                    <th style="text-align: right; padding: 8px; border-bottom: 2px solid #ccc;">Qtd</th>
-                    <th style="text-align: right; padding: 8px; border-bottom: 2px solid #ccc;">Preço Unit.</th>
-                    <th style="text-align: right; padding: 8px; border-bottom: 2px solid #ccc;">Subtotal</th>
-                    <th style="padding: 8px; border-bottom: 2px solid #ccc;">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-    document.querySelectorAll('input[name="material_id[]"]').forEach(function(input, index) {
-        let materialId = parseInt(input.value.split(' ')[0]);
-        let materialNome = materiais.find(m => m.id == materialId)?.nome || "ID " + materialId;
-        let qtd = parseFloat(document.getElementsByName('quantidade[]')[index].value) || 0;
-        let preco = parseFloat(document.getElementsByName('preco_unitario[]')[index].value) || 0;
-        let subtotal = qtd * preco;
-        total += subtotal;
-
-        html += `
-            <tr>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${materialNome}</td>
-                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #ddd;">${qtd}</td>
-                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #ddd;">R$ ${preco.toFixed(2)}</td>
-                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #ddd;">R$ ${subtotal.toFixed(2)}</td>
-                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">
-                    <button type="button" onclick="editarItem(${index})" style="background:none; border:none; cursor:pointer;" title="Editar">✏️</button>
-                    <button type="button" onclick="removerItem(${index})" style="background:none; border:none; cursor:pointer; margin-left:8px;" title="Remover">🗑️</button>
-                </td>
-            </tr>
-        `;
-    });
-
-    html += `
-            </tbody>
-        </table>
-    `;
-
-    document.getElementById('resumo_itens').innerHTML = html;
-    document.getElementById('total_compra').innerText = total.toFixed(2);
-}
-
-function adicionarOuEditarItem() {
-    let material = document.getElementById('material_input').value.trim();
-    let quantidade = document.getElementById('quantidade_input').value;
-    let precoUnitario = document.getElementById('preco_input').value;
-    let editIndex = document.getElementById('edit_index').value;
-
-    if (!material || quantidade <= 0 || precoUnitario <= 0) {
-        alert("Preencha material, quantidade e preço corretamente");
-        return;
+(function(){
+    // util debounce
+    function debounce(fn, wait){
+        let t;
+        return function(){
+            const args = arguments;
+            clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, args), wait);
+        };
     }
 
-    let materialId = parseInt(material.split(' ')[0]);
-    let materialObj = materiais.find(function(item) { return item.id == materialId; });
-    if (!materialObj) {
-        alert("Material não encontrado no banco de dados!");
-        return;
-    }
-    let materialValue = materialObj.id + ' - ' + materialObj.nome;
-
-    if (editIndex !== '') {
-        document.getElementsByName('material_id[]')[editIndex].value = materialValue;
-        document.getElementsByName('quantidade[]')[editIndex].value = quantidade;
-        document.getElementsByName('preco_unitario[]')[editIndex].value = precoUnitario;
-        document.getElementById('edit_index').value = '';
-    } else {
-        ['material_id', 'quantidade', 'preco_unitario'].forEach(function(field) {
-            let input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = field + '[]';
-            input.value = (field === 'material_id') ? materialValue : (field === 'quantidade' ? quantidade : precoUnitario);
-            document.getElementById('formCompra').appendChild(input);
-        });
-    }
-
-    document.getElementById('material_input').value = '';
-    document.getElementById('quantidade_input').value = '';
-    document.getElementById('preco_input').value = '';
-    document.getElementById('material_input').focus();
-    atualizarResumo();
-}
-
-function editarItem(index) {
-    document.getElementById('material_input').value = document.getElementsByName('material_id[]')[index].value;
-    document.getElementById('quantidade_input').value = document.getElementsByName('quantidade[]')[index].value;
-    document.getElementById('preco_input').value = document.getElementsByName('preco_unitario[]')[index].value;
-    document.getElementById('edit_index').value = index;
-    document.getElementById('material_input').focus();
-}
-
-function removerItem(index) {
-    document.getElementsByName('material_id[]')[index].remove();
-    document.getElementsByName('quantidade[]')[index].remove();
-    document.getElementsByName('preco_unitario[]')[index].remove();
-    atualizarResumo();
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    autocomplete('cliente', clientes);
-    autocomplete('material_input', materiais);
-    document.getElementById('adicionarItemBtn').addEventListener('click', adicionarOuEditarItem);
-
-    // Enter no campo cliente seleciona e busca tabela de preço
-    document.getElementById('cliente').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            let val = this.value.trim();
-            let idCliente = parseInt(val.split(' ')[0]);
-            let clienteSelecionado = clientes.find(c => c.id == idCliente);
-            if (clienteSelecionado) {
-                this.value = clienteSelecionado.id + ' - ' + clienteSelecionado.nome;
-                // Preencher/preencher tabela de preço
-                if (clienteSelecionado.lista_preco_id) {
-                    window.listaPrecoAtual = clienteSelecionado.lista_preco_id;
-                    let listaObj = listas_precos.find(l => l.id == clienteSelecionado.lista_preco_id);
-                    if (listaObj) {
-                        document.getElementById('lista_preco').value = listaObj.id + ' - ' + listaObj.nome;
-                    } else {
-                        document.getElementById('lista_preco').value = clienteSelecionado.lista_preco_id;
-                    }
-                } else {
-                    window.listaPrecoAtual = null;
-                    document.getElementById('lista_preco').value = '';
-                }
-                document.getElementById('material_input').focus();
-            } else {
-                alert('Cliente não encontrado!');
-            }
+    function atualizarResumo(){
+        let total = 0;
+        let rows = '';
+        const mats = document.getElementsByName('material_id[]');
+        for(let i=0;i<mats.length;i++){
+            const mid = parseInt(mats[i].value.split(' ')[0]);
+            const nome = (materiais.find(m=>m.id==mid)||{}).nome || ('ID '+mid);
+            const qtd = parseFloat(document.getElementsByName('quantidade[]')[i].value) || 0;
+            const preco = parseFloat(document.getElementsByName('preco_unitario[]')[i].value) || 0;
+            const subtotal = qtd*preco;
+            total += subtotal;
+            rows += `<tr><td style="padding:8px;border-bottom:1px solid #ddd;">${nome}</td>`+
+                    `<td style="padding:8px;text-align:right;border-bottom:1px solid #ddd;">${qtd}</td>`+
+                    `<td style="padding:8px;text-align:right;border-bottom:1px solid #ddd;">R$ ${preco.toFixed(2)}</td>`+
+                    `<td style="padding:8px;text-align:right;border-bottom:1px solid #ddd;">R$ ${subtotal.toFixed(2)}</td>`+
+                    `<td style="padding:8px;text-align:center;border-bottom:1px solid #ddd;">`+
+                    `<button type="button" onclick="editarItem(${i})" style="background:none;border:none;cursor:pointer;">✏️</button>`+
+                    `<button type="button" onclick="removerItem(${i})" style="background:none;border:none;cursor:pointer;margin-left:8px;">🗑️</button>`+
+                    `</td></tr>`;
         }
-    });
+        const table = `<table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;"><thead><tr style="background:#f0f0f0;"><th style="text-align:left;padding:8px;border-bottom:2px solid #ccc;">Material</th><th style="text-align:right;padding:8px;border-bottom:2px solid #ccc;">Qtd</th><th style="text-align:right;padding:8px;border-bottom:2px solid #ccc;">Preço Unit.</th><th style="text-align:right;padding:8px;border-bottom:2px solid #ccc;">Subtotal</th><th style="padding:8px;border-bottom:2px solid #ccc;">Ações</th></tr></thead><tbody>`+rows+`</tbody></table>`;
+        const resumo = document.getElementById('resumo_itens'); if(resumo) resumo.innerHTML = table;
+        const totalEl = document.getElementById('total_compra'); if(totalEl) totalEl.innerText = total.toFixed(2);
+    }
 
-    // Função para preencher preço automático (campo lista > cliente > lista padrão)
-    function preencherPrecoAutomatico() {
-        let listaVal = document.getElementById('lista_preco').value || '';
-        let listaId = parseInt(listaVal.split(' ')[0]);
-        if (!listaId) {
-            const clienteVal = document.getElementById('cliente').value || '';
-            const clienteId = parseInt(clienteVal.split(' ')[0]);
-            if (clienteId) {
-                const clienteObj = clientes.find(c => c.id == clienteId);
-                if (clienteObj && clienteObj.lista_preco_id) listaId = clienteObj.lista_preco_id;
-            }
+    window.adicionarOuEditarItem = function(){
+        const materialEl = document.getElementById('material_input');
+        const qtdEl = document.getElementById('quantidade_input');
+        const precoEl = document.getElementById('preco_input');
+        const editIndexEl = document.getElementById('edit_index');
+        if(!materialEl || !qtdEl || !precoEl) return;
+        const material = materialEl.value.trim();
+        const quantidade = parseFloat(qtdEl.value);
+        const precoUnitario = parseFloat(precoEl.value);
+        const editIndex = editIndexEl && editIndexEl.value !== '' ? parseInt(editIndexEl.value) : null;
+        if(!material || isNaN(quantidade) || quantidade<=0 || isNaN(precoUnitario) || precoUnitario<=0){
+            alert('Preencha material, quantidade e preço corretamente');
+            return;
         }
-        if (!listaId && lista_preco_padrao && lista_preco_padrao.id) listaId = lista_preco_padrao.id;
-        let materialId = parseInt(document.getElementById('material_input').value.split(' ')[0]);
-        if (precos[listaId] && precos[listaId][materialId]) {
-            document.getElementById('preco_input').value = precos[listaId][materialId];
+        const materialId = parseInt(material.split(' ')[0]);
+        const materialObj = materiais.find(m=>m.id==materialId);
+        if(!materialObj){ alert('Material não encontrado no banco de dados!'); return; }
+        const materialValue = materialObj.id+' - '+materialObj.nome;
+        if(editIndex !== null && !isNaN(editIndex)){
+            const mid = document.getElementsByName('material_id[]')[editIndex];
+            const q = document.getElementsByName('quantidade[]')[editIndex];
+            const p = document.getElementsByName('preco_unitario[]')[editIndex];
+            if(mid) mid.value = materialValue;
+            if(q) q.value = quantidade;
+            if(p) p.value = precoUnitario;
+            if(editIndexEl) editIndexEl.value = '';
         } else {
-            document.getElementById('preco_input').value = '';
+            ['material_id','quantidade','preco_unitario'].forEach(function(field){
+                const input = document.createElement('input');
+                input.type = 'hidden'; input.name = field+'[]';
+                input.value = field==='material_id' ? materialValue : (field==='quantidade' ? quantidade : precoUnitario);
+                document.getElementById('formCompra').appendChild(input);
+            });
         }
-    }
+        materialEl.value=''; qtdEl.value=''; precoEl.value=''; materialEl.focus(); atualizarResumo();
+    };
 
-    document.getElementById('lista_preco').addEventListener('blur', preencherPrecoAutomatico);
-    document.getElementById('material_input').addEventListener('blur', preencherPrecoAutomatico);
-    document.getElementById('material_input').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            let val = this.value.trim();
-            let materialId = parseInt(val.split(' ')[0]);
-            let materialObj = materiais.find(function(item) { return item.id == materialId; });
-            if (val && materialObj) {
-                this.value = materialObj.id + ' - ' + materialObj.nome;
-                document.getElementById('quantidade_input').focus();
-                preencherPrecoAutomatico();
-            } else {
-                alert('Material não encontrado!');
-            }
-        }
-    });
+    window.editarItem = function(index){
+        const mid = document.getElementsByName('material_id[]')[index];
+        const q = document.getElementsByName('quantidade[]')[index];
+        const p = document.getElementsByName('preco_unitario[]')[index];
+        if(mid) document.getElementById('material_input').value = mid.value;
+        if(q) document.getElementById('quantidade_input').value = q.value;
+        if(p) document.getElementById('preco_input').value = p.value;
+        const editIndexEl = document.getElementById('edit_index'); if(editIndexEl) editIndexEl.value = index;
+        document.getElementById('material_input').focus();
+    };
 
-    document.getElementById('quantidade_input').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            if (this.value > 0) {
-                document.getElementById('preco_input').focus();
-            } else {
-                alert('Quantidade obrigatória!');
-            }
-        }
-    });
-    document.getElementById('preco_input').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            if (this.value > 0) {
-                adicionarOuEditarItem();
-            } else {
-                alert('Preço obrigatório!');
-            }
-        }
-    });
+    window.removerItem = function(index){
+        const mids = document.getElementsByName('material_id[]');
+        const qtds = document.getElementsByName('quantidade[]');
+        const precs = document.getElementsByName('preco_unitario[]');
+        if(mids[index]) mids[index].remove();
+        if(qtds[index]) qtds[index].remove();
+        if(precs[index]) precs[index].remove();
+        atualizarResumo();
+    };
 
-    // Preencher preço automático ao focar no campo preço (usa mesmo fallback)
-    document.getElementById('preco_input').addEventListener('focus', function() {
-        function preencherPrecoFocus() {
-            let listaVal = document.getElementById('lista_preco').value || '';
+    function preencherPrecoAutomatico(){
+        try{
+            let listaVal = document.getElementById('lista_preco')?.value || '';
             let listaId = parseInt(listaVal.split(' ')[0]);
-            if (!listaId) {
-                const clienteVal = document.getElementById('cliente').value || '';
+            if(!listaId){
+                const clienteVal = document.getElementById('cliente')?.value || '';
                 const clienteId = parseInt(clienteVal.split(' ')[0]);
-                if (clienteId) {
-                    const clienteObj = clientes.find(c => c.id == clienteId);
-                    if (clienteObj && clienteObj.lista_preco_id) listaId = clienteObj.lista_preco_id;
+                if(clienteId){
+                    const clienteObj = clientes.find(c=>c.id==clienteId);
+                    if(clienteObj && clienteObj.lista_preco_id) listaId = clienteObj.lista_preco_id;
                 }
             }
-            if (!listaId && lista_preco_padrao && lista_preco_padrao.id) listaId = lista_preco_padrao.id;
-            let materialId = parseInt(document.getElementById('material_input').value.split(' ')[0]);
-            if (listaId && materialId && precos && precos[listaId] && precos[listaId][materialId]) {
+            if(!listaId && lista_preco_padrao && lista_preco_padrao.id) listaId = lista_preco_padrao.id;
+            const materialId = parseInt((document.getElementById('material_input')?.value||'').split(' ')[0]);
+            if(listaId && materialId && precos && precos[listaId] && precos[listaId][materialId]){
                 document.getElementById('preco_input').value = precos[listaId][materialId];
-            } else {
-                document.getElementById('preco_input').value = '';
             }
-        }
-        if (window.precosCarregando) {
-            let tentativas = 0;
-            let intervalo = setInterval(function() {
-                tentativas++;
-                if (!window.precosCarregando) {
-                    preencherPrecoFocus();
-                    clearInterval(intervalo);
+        }catch(e){/* noop */}
+    }
+
+    // busca produtos via AJAX
+    const resultadoMateriais = document.getElementById('dropdown-materiais');
+    const materialInput = document.getElementById('material_input');
+    const debounceProdutos = debounce(function(termo){
+        if(!termo || termo.length<1){ resultadoMateriais.innerHTML=''; resultadoMateriais.style.display='none'; return; }
+        fetch('ajax/buscar_produto.php?termo='+encodeURIComponent(termo)+'&empresa_id='+encodeURIComponent(empresa_id))
+        .then(r=>r.json()).then(data=>{
+            resultadoMateriais.innerHTML=''; resultadoMateriais.style.display = data.length ? 'block' : 'none';
+            data.forEach(function(mat){
+                const li = document.createElement('li'); li.className='list-group-item list-group-item-action';
+                li.textContent = mat.id+' - '+mat.nome;
+                li.onclick = function(){ materialInput.value = mat.id+' - '+mat.nome; resultadoMateriais.innerHTML=''; resultadoMateriais.style.display='none'; preencherPrecoAutomatico(); document.getElementById('quantidade_input').focus(); };
+                resultadoMateriais.appendChild(li);
+            });
+        }).catch(()=>{ resultadoMateriais.innerHTML=''; resultadoMateriais.style.display='none'; });
+    },180);
+
+    if(materialInput){
+        materialInput.addEventListener('input', function(){ debounceProdutos(this.value.trim()); });
+        materialInput.addEventListener('keydown', function(e){
+            const items = resultadoMateriais?.querySelectorAll('li')||[];
+            if(e.key==='Enter'){
+                if(this.value.trim()===''){
+                    // abrir modal se tiver itens
+                    if(document.getElementsByName('material_id[]').length>0){ document.getElementById('btnAbrirModalPagamento').click(); }
+                    e.preventDefault();
+                    return;
                 }
-                if (tentativas > 10) clearInterval(intervalo);
-            }, 100);
-        } else {
-            preencherPrecoFocus();
-        }
-    });
-});
+                // se usuário digitou ID, preencher
+                const maybeId = parseInt(this.value.split(' ')[0]);
+                const found = materiais.find(m=>m.id==maybeId);
+                if(found){ this.value = found.id+' - '+found.nome; preencherPrecoAutomatico(); document.getElementById('quantidade_input').focus(); }
+            }
+        });
+        materialInput.addEventListener('blur', function(){ setTimeout(()=>{ resultadoMateriais.innerHTML=''; resultadoMateriais.style.display='none'; },150); });
+    }
+
+    // busca clientes via AJAX (debounced)
+    const clienteInput = document.getElementById('cliente');
+    const resultadoClientes = document.getElementById('dropdown-clientes');
+    if(clienteInput){
+        const debCli = debounce(function(termo){
+            if(!termo || termo.length<1){ resultadoClientes.innerHTML=''; resultadoClientes.style.display='none'; return; }
+            fetch('ajax/buscar_cliente.php?termo='+encodeURIComponent(termo)+'&empresa_id='+encodeURIComponent(empresa_id))
+            .then(r=>r.json()).then(data=>{
+                resultadoClientes.innerHTML=''; resultadoClientes.style.display = data.length ? 'block' : 'none';
+                data.forEach(function(cli){
+                    const li = document.createElement('li'); li.className='list-group-item list-group-item-action'; li.textContent = cli.id+' - '+cli.nome;
+                    li.onclick = function(){ clienteInput.value = cli.id+' - '+cli.nome; resultadoClientes.innerHTML=''; resultadoClientes.style.display='none'; if(cli.lista_preco_id){ const l = listas_precos.find(x=>x.id==cli.lista_preco_id); document.getElementById('lista_preco').value = l ? (l.id+' - '+l.nome) : cli.lista_preco_id; } document.getElementById('material_input').focus(); };
+                    resultadoClientes.appendChild(li);
+                });
+            }).catch(()=>{ resultadoClientes.innerHTML=''; resultadoClientes.style.display='none'; });
+        },180);
+        clienteInput.addEventListener('input', function(){ debCli(this.value.trim()); });
+        clienteInput.addEventListener('blur', function(){ setTimeout(()=>{ resultadoClientes.innerHTML=''; resultadoClientes.style.display='none'; },150); });
+    }
+
+    // eventos de teclado para quantidade/preco
+    const quantidadeInput = document.getElementById('quantidade_input');
+    const precoInput = document.getElementById('preco_input');
+    if(quantidadeInput){ quantidadeInput.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); const v=parseFloat(this.value); if(!isNaN(v)&&v>0) precoInput.focus(); else alert('Quantidade obrigatória!'); } }); }
+    if(precoInput){ precoInput.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); const v=parseFloat(this.value); if(!isNaN(v)&&v>0){ adicionarOuEditarItem(); setTimeout(()=>materialInput.focus(),50); } else alert('Preço obrigatório!'); } }); }
+
+    // preencher preço ao focar
+    if(precoInput){ precoInput.addEventListener('focus', preencherPrecoAutomatico); }
+
+    // botões modal pagamento
+    const btnAbrir = document.getElementById('btnAbrirModalPagamento');
+    if(btnAbrir){ btnAbrir.addEventListener('click', function(e){ e.preventDefault(); // atualizar modal totals
+            const total = parseFloat(document.getElementById('total_compra')?.innerText)||0; document.getElementById('modal_total_compra').innerText = total.toFixed(2);
+            // show modal
+            new bootstrap.Modal(document.getElementById('modalPagamentoCompra')).show();
+        }); }
+
+    // confirmar pagamento (copiar campos)
+    const btnConfirmar = document.getElementById('btnConfirmarPagamentoCompra');
+    if(btnConfirmar){ btnConfirmar.addEventListener('click', function(){ const form = document.getElementById('formCompra'); ['valor_dinheiro_compra','valor_pix_compra','valor_cartao_compra'].forEach(function(id){ const el = document.getElementById(id); if(!el) return; const name = id.replace('_compra',''); let existing = form.querySelector('input[name="'+name+'"]'); if(existing) existing.value = el.value||0; else{ const h = document.createElement('input'); h.type='hidden'; h.name = name; h.value = el.value||0; form.appendChild(h); } }); const gerar = document.getElementById('gerar_troco_compra')?.checked ? 1 : 0; let existingTroco = form.querySelector('input[name="gerar_troco"]'); if(existingTroco) existingTroco.value = gerar; else{ const h2 = document.createElement('input'); h2.type='hidden'; h2.name='gerar_troco'; h2.value = gerar; form.appendChild(h2); } form.submit(); }); }
+
+    // garantir foco ao abrir/fechar modal
+    const modalCompraEl = document.getElementById('modalPagamentoCompra');
+    if(modalCompraEl){ modalCompraEl.addEventListener('shown.bs.modal', function(){ const vd = document.getElementById('valor_dinheiro_compra'); if(vd) vd.focus(); }); modalCompraEl.addEventListener('hidden.bs.modal', function(){ setTimeout(()=>{ if(materialInput) materialInput.focus(); document.querySelectorAll('.modal-backdrop').forEach(b=>b.remove()); },50); }); }
+
+    // foco inicial
+    setTimeout(()=>{ try{ document.getElementById('material_input')?.focus(); }catch(e){} },200);
+
+    // expose preencherPrecoAutomatico globally for other handlers
+    window.preencherPrecoAutomatico = preencherPrecoAutomatico;
+    window.atualizarResumo = atualizarResumo;
+})();
 </script>
-
-<!-- Modal Pagamento (compra) -->
-<div class="modal fade" id="modalPagamentoCompra" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Formas de Pagamento</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Total da Compra: R$ <span id="modal_total_compra">0.00</span></h6>
-
-                <div class="mb-2">
-                    <label>Dinheiro:</label>
-                    <input type="number" step="0.01" name="valor_dinheiro" id="valor_dinheiro_compra" class="form-control">
-                </div>
-                <div class="mb-2">
                     <label>Pix:</label>
                     <input type="number" step="0.01" name="valor_pix" id="valor_pix_compra" class="form-control">
                 </div>

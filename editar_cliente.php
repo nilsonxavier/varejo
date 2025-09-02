@@ -1,5 +1,52 @@
 <?php
 require_once 'conexx/config.php';
+require_once 'verifica_login.php';
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+// Processa movimentação ANTES de qualquer saída HTML
+if (isset($_POST['registrar_movimentacao'])) {
+    // Proteção contra duplo envio
+    if (empty($_POST['mov_token']) || $_POST['mov_token'] !== $_SESSION['mov_token']) {
+        exit;
+    }
+    // Invalida token após uso
+    unset($_SESSION['mov_token']);
+    $cliente_id = intval($_GET['id']);
+    $tipo = $_POST['tipo_mov'];
+    $valor = floatval($_POST['valor_mov']);
+    $descricao = trim($_POST['descricao_mov']);
+    $empresa_id = $_SESSION['usuario_empresa'];
+    // Buscar saldo atual
+    $stmt = $conn->prepare("SELECT saldo FROM clientes WHERE id = ?");
+    $stmt->bind_param("i", $cliente_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $saldo_atual = $res->num_rows ? floatval($res->fetch_assoc()['saldo']) : 0;
+    if ($tipo === 'emprestimo') {
+        $novo_saldo = $saldo_atual - $valor;
+        $tipo_mov = 'devedor';
+    } elseif ($tipo === 'recebimento') {
+        $novo_saldo = $saldo_atual + $valor;
+        $tipo_mov = 'credor';
+    } else {
+        $novo_saldo = $saldo_atual;
+        $tipo_mov = '';
+    }
+    if ($tipo_mov) {
+        $stmt = $conn->prepare("INSERT INTO movimentacoes_clientes (cliente_id, tipo, valor, descricao, empresa_id, saldo_apos) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("isdssi", $cliente_id, $tipo_mov, $valor, $descricao, $empresa_id, $novo_saldo);
+        $stmt->execute();
+        // Atualiza saldo do cliente
+        $stmt = $conn->prepare("UPDATE clientes SET saldo=? WHERE id=?");
+        $stmt->bind_param("di", $novo_saldo, $cliente_id);
+        $stmt->execute();
+        $msg = urlencode('Movimentação registrada com sucesso!');
+        header("Location: cadastro_clientes.php?msg=$msg");
+        exit;
+    }
+}
 
 // Verificar se o ID do cliente foi passado
 if (!isset($_GET['id']) || intval($_GET['id']) <= 0) {
@@ -42,7 +89,10 @@ if (isset($_POST['atualizar_cliente'])) {
 }
 
 // Listas de preços
+    // Listas de preços da empresa do cliente
+    $empresa_id_cliente = intval($cliente['empresa_id']);
 $listas = $conn->query("SELECT * FROM listas_precos ORDER BY nome");
+    $listas = $conn->query("SELECT * FROM listas_precos WHERE empresa_id = $empresa_id_cliente ORDER BY nome");
 
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
@@ -79,6 +129,12 @@ include __DIR__.'/includes/footer.php';
     <div class="section-card">
         <h2><i class="bi bi-pencil-square"></i> Editar Cliente</h2>
         <form method="post">
+                <?php
+                // Gera token único para o formulário
+                if (empty($_SESSION['mov_token'])) {
+                    $_SESSION['mov_token'] = bin2hex(random_bytes(16));
+                }
+                ?>
             <div class="mb-3">
                 <label>Nome:</label>
                 <input type="text" name="nome" class="form-control" value="<?= htmlspecialchars($cliente['nome']) ?>" required>
@@ -123,8 +179,115 @@ include __DIR__.'/includes/footer.php';
             </button>
             <a href="cadastro_clientes.php" class="btn btn-secondary ms-2">Cancelar</a>
         </form>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <button type="button" class="btn btn-warning btn-sm flex-fill" data-bs-toggle="modal" data-bs-target="#modalEmprestar">
+                    <i class="bi bi-arrow-up-circle"></i> Emprestar
+                </button>
+                <button type="button" class="btn btn-success btn-sm flex-fill" data-bs-toggle="modal" data-bs-target="#modalReceber">
+                    <i class="bi bi-arrow-down-circle"></i> Receber
+                </button>
+            </div>
     </div>
 </div>
+
+
+    <!-- Modal Emprestar -->
+    <div class="modal fade" id="modalEmprestar" tabindex="-1" aria-labelledby="modalEmprestarLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalEmprestarLabel">Emprestar dinheiro para <?= htmlspecialchars($cliente['nome']) ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="tipo_mov" value="emprestimo">
+                            <input type="hidden" name="mov_token" value="<?= $_SESSION['mov_token'] ?>">
+                        <div class="mb-3">
+                            <label>Valor (R$):</label>
+                            <input type="number" step="0.01" min="0" name="valor_mov" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Descrição (opcional):</label>
+                            <input type="text" name="descricao_mov" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" name="registrar_movimentacao" class="btn btn-warning">Confirmar Emprestimo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Receber -->
+    <div class="modal fade" id="modalReceber" tabindex="-1" aria-labelledby="modalReceberLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalReceberLabel">Receber pagamento de <?= htmlspecialchars($cliente['nome']) ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="tipo_mov" value="recebimento">
+                            <input type="hidden" name="mov_token" value="<?= $_SESSION['mov_token'] ?>">
+                        <div class="mb-3">
+                            <label>Valor (R$):</label>
+                            <input type="number" step="0.01" min="0" name="valor_mov" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Descrição (opcional):</label>
+                            <input type="text" name="descricao_mov" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" name="registrar_movimentacao" class="btn btn-success">Confirmar Recebimento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <?php
+    if (isset($_POST['registrar_movimentacao'])) {
+            // Proteção contra duplo envio
+            if (empty($_POST['mov_token']) || $_POST['mov_token'] !== $_SESSION['mov_token']) {
+                exit;
+            }
+            // Invalida token após uso
+            unset($_SESSION['mov_token']);
+        $tipo = $_POST['tipo_mov'];
+        $valor = floatval($_POST['valor_mov']);
+        $descricao = trim($_POST['descricao_mov']);
+        $empresa_id = intval($cliente['empresa_id']);
+        $saldo_atual = floatval($cliente['saldo']);
+        if ($tipo === 'emprestimo') {
+            $novo_saldo = $saldo_atual + $valor;
+            $tipo_mov = 'debito';
+        } elseif ($tipo === 'recebimento') {
+            $novo_saldo = $saldo_atual - $valor;
+            $tipo_mov = 'credito';
+        } else {
+            $novo_saldo = $saldo_atual;
+            $tipo_mov = '';
+        }
+        if ($tipo_mov) {
+            $stmt = $conn->prepare("INSERT INTO movimentacoes_clientes (cliente_id, tipo, valor, descricao, empresa_id, saldo_apos) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("isdssi", $cliente_id, $tipo_mov, $valor, $descricao, $empresa_id, $novo_saldo);
+            $stmt->execute();
+            // Atualiza saldo do cliente
+            $stmt = $conn->prepare("UPDATE clientes SET saldo=? WHERE id=?");
+            $stmt->bind_param("di", $novo_saldo, $cliente_id);
+            $stmt->execute();
+            $msg = urlencode('Movimentação registrada com sucesso!');
+            header("Location: cadastro_clientes.php?msg=$msg");
+            exit;
+        }
+    }
+    ?>
 
 </body>
 </html>

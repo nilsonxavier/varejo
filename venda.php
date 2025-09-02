@@ -39,7 +39,7 @@ if ($res_lp && $r_lp = $res_lp->fetch_assoc()) {
 
 // Materiais
 $materiais_arr = [];
-$res = $conn->query("SELECT id, nome FROM materiais");
+$res = $conn->query("SELECT id, nome FROM materiais WHERE empresa_id = " . intval($empresa_id));
 while ($m = $res->fetch_assoc()) {
     $materiais_arr[] = ["id" => $m['id'], "nome" => $m['nome']];
 }
@@ -155,6 +155,11 @@ while ($v = $resSuspensas->fetch_assoc()) {
                               <input type="number" step="0.01" name="valor_cartao" id="valor_cartao" class="form-control">
                             </div>
 
+                                                                                    <div class="mb-2">
+                                                                                        <label>Valor Fiado (adicionar à conta do cliente):</label>
+                                                                                        <input type="number" step="0.01" name="valor_fiado" id="valor_fiado" class="form-control" value="">
+                                                                                    </div>
+
                             <h6>Total Pago: R$ <span id="modal_total_pago">0.00</span></h6>
                             <div id="aviso_pagamento" class="text-danger mt-2"></div>
 
@@ -164,8 +169,9 @@ while ($v = $resSuspensas->fetch_assoc()) {
                             </div>
                           </div>
                           <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                             <button type="submit" class="btn btn-primary" id="btnConfirmarPagamento">Confirmar Pagamento</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            
                           </div>
                         </div>
                       </div>
@@ -334,6 +340,20 @@ function preencherPrecoAutomatico() {
     if (precos[listaId] && precos[listaId][materialId]) {
         document.getElementById('preco_input').value = precos[listaId][materialId];
     }
+    // Se o usuário digitou apenas o ID do material, preencher com "ID - Nome" para consistência
+    try {
+        let matInput = document.getElementById('material_input');
+        let raw = matInput.value.trim();
+        let maybeId = parseInt(raw.split(' ')[0]);
+        if (maybeId && !isNaN(maybeId)) {
+            let found = materiais.find(m => m.id == maybeId);
+            if (found) {
+                matInput.value = `${found.id} - ${found.nome}`;
+            }
+        }
+    } catch (err) {
+        // noop
+    }
 }
 
 function adicionarOuEditarItem() {
@@ -401,7 +421,8 @@ function atualizarModalPagamento() {
     let dinheiro = parseFloat(document.getElementById('valor_dinheiro').value) || 0;
     let pix = parseFloat(document.getElementById('valor_pix').value) || 0;
     let cartao = parseFloat(document.getElementById('valor_cartao').value) || 0;
-    let totalPago = dinheiro + pix + cartao;
+    let fiado = parseFloat(document.getElementById('valor_fiado').value) || 0;
+    let totalPago = dinheiro + pix + cartao + fiado;
 
     document.getElementById('modal_total_venda').innerText = totalVenda.toFixed(2);
     document.getElementById('modal_total_pago').innerText = totalPago.toFixed(2);
@@ -448,6 +469,10 @@ document.addEventListener('DOMContentLoaded', function() {
     autocomplete('lista_preco', listas_precos);
     autocomplete('material_input', materiais);
 
+    // foco inicial no campo material
+    const matInputInit = document.getElementById('material_input');
+    if (matInputInit) setTimeout(() => matInputInit.focus(), 200);
+
     document.getElementById('cliente').addEventListener('blur', function() {
         const valor = this.value.trim();
         const idCliente = parseInt(valor.split(' ')[0]);
@@ -470,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
         new bootstrap.Modal(document.getElementById('modalPagamento')).show();
     });
 
-    ['valor_dinheiro', 'valor_pix', 'valor_cartao'].forEach(function(id) {
+    ['valor_dinheiro', 'valor_pix', 'valor_cartao', 'valor_fiado'].forEach(function(id) {
         document.getElementById(id).addEventListener('input', atualizarModalPagamento);
     });
 
@@ -485,6 +510,56 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    // Teclas Enter: fluxo assistido entre material -> quantidade -> preco -> adicionar
+    const matEl = document.getElementById('material_input');
+    const qtdEl = document.getElementById('quantidade_input');
+    const precoEl = document.getElementById('preco_input');
+
+    // Enter em material: se vazio -> finalizar venda (modal) quando houver itens; se com texto -> ir para quantidade
+    matEl.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const matVal = this.value.trim();
+            if (matVal === '') {
+                atualizarResumo();
+                const itensCount = document.getElementsByName('material_id[]').length;
+                if (itensCount > 0) {
+                    atualizarModalPagamento();
+                    new bootstrap.Modal(document.getElementById('modalPagamento')).show();
+                }
+            } else {
+                // Preencher possível autocomplete/format e pular para quantidade
+                preencherPrecoAutomatico();
+                setTimeout(() => { qtdEl.focus(); }, 50);
+            }
+        }
+    });
+
+    // Enter em quantidade: pular para preço
+    qtdEl.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            setTimeout(() => { precoEl.focus(); }, 50);
+        }
+    });
+
+    // Enter em preco: adicionar ao carrinho e voltar foco para material
+    precoEl.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            adicionarOuEditarItem();
+            setTimeout(() => { matEl.focus(); }, 50);
+        }
+    });
+
+    // Ao abrir o modal de pagamento (Bootstrap), focar o campo dinheiro
+    var modalEl = document.getElementById('modalPagamento');
+    if (modalEl) {
+        modalEl.addEventListener('shown.bs.modal', function () {
+            var vd = document.getElementById('valor_dinheiro');
+            if (vd) vd.focus();
+        });
+    }
 });
 
 

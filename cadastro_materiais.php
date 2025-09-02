@@ -12,7 +12,7 @@ if (isset($_POST['adicionar_material'])) {
         $stmt->bind_param("si", $nome_material, $empresa_id);
         $stmt->execute();
     }
-    header("Location: cadastro_materiais.php");
+    header("Location: estoque.php");
     exit;
 }
 
@@ -92,16 +92,25 @@ if (isset($_GET['excluir_material'])) {
         $check->execute();
         $resCheck = $check->get_result();
         if ($resCheck->num_rows > 0) {
-            $del1 = $conn->prepare("DELETE FROM precos_materiais WHERE material_id = ?");
-            $del1->bind_param('i', $excluir_id);
-            $del1->execute();
+            // Exclui dependências para evitar erro de FK
+            $delEstoque = $conn->prepare("DELETE FROM estoque WHERE material_id = ?");
+            $delEstoque->bind_param('i', $excluir_id);
+            $delEstoque->execute();
 
-            $del2 = $conn->prepare("DELETE FROM materiais WHERE id = ? AND empresa_id = ?");
-            $del2->bind_param('ii', $excluir_id, $empresa_id);
-            $del2->execute();
+            $delVendasItens = $conn->prepare("DELETE FROM vendas_itens WHERE material_id = ?");
+            $delVendasItens->bind_param('i', $excluir_id);
+            $delVendasItens->execute();
+
+            $delPrecos = $conn->prepare("DELETE FROM precos_materiais WHERE material_id = ?");
+            $delPrecos->bind_param('i', $excluir_id);
+            $delPrecos->execute();
+
+            $delMaterial = $conn->prepare("DELETE FROM materiais WHERE id = ? AND empresa_id = ?");
+            $delMaterial->bind_param('ii', $excluir_id, $empresa_id);
+            $delMaterial->execute();
         }
     }
-    header("Location: cadastro_materiais.php");
+    header("Location: estoque.php");
     exit;
 }
 
