@@ -89,7 +89,7 @@ $saldo = $res->fetch_assoc()['saldo'] ?? 0;
                 <thead>
                     <tr>
                         <th><i class="bi bi-calendar-date"></i> Data</th>
-                        <th><i class="bi bi-arrow-left-right"></i> Tipo</th>
+                        
                         <th><i class="bi bi-currency-dollar"></i> Valor</th>
                         <th><i class="bi bi-pencil"></i> Origem</th>
                         <th><i class="bi bi-wallet2"></i> Saldo</th>
@@ -99,7 +99,7 @@ $saldo = $res->fetch_assoc()['saldo'] ?? 0;
                 <?php foreach($movs as $m): ?>
                     <tr>
                         <td><?= date('d/m/Y H:i', strtotime($m['data_movimentacao'])) ?></td>
-                        <td><?= htmlspecialchars($m['tipo']) ?></td>
+                        
                         <td class="<?= $m['tipo'] === 'debito' ? 'text-danger' : ($m['tipo'] === 'credito' ? 'text-success' : '') ?>">R$ <?= number_format($m['valor'],2,',','.') ?></td>
                         <td><?= htmlspecialchars($m['descricao']) ?></td>
                         <td>R$ <?= number_format($m['saldo_apos'],2,',','.') ?></td>

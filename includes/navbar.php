@@ -131,6 +131,7 @@
                         Configurações
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="configuracaoDropdown">
+                        <li><a class="dropdown-item" href="configuracoes.php">Configurações do Sistema</a></li>
                         <li><a class="dropdown-item" href="gerenciar_usuarios.php">Usuarios</a></li>
                         <li><a class="dropdown-item" href="caixa.php">Caixa</a></li>
 

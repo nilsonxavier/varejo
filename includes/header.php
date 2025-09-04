@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -12,6 +11,15 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+<?php 
+// Incluir configurações globais do sistema
+if (file_exists(__DIR__ . '/configuracoes_globais.php')) {
+    include_once __DIR__ . '/configuracoes_globais.php';
+    // Aplicar estilos automaticamente
+    incluirEstilosConfiguracoes();
+}
+?>
 
 <!-- Bootstrap JS Bundle -->
 <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
@@ -58,10 +66,13 @@
   </style>
 
 
-    <!-- jQuery e Select2 CDN -->
+<!-- jQuery e Select2 CDN -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Sistema de Configurações -->
+<script src="js/configuracoes.js"></script>
 
 
 

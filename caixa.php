@@ -216,7 +216,7 @@ include __DIR__.'/includes/footer.php';
                             <td>R$ <?= number_format($cx['valor_final'], 2, ',', '.') ?></td>
                             <td>
                                 <a href="detalhes_caixa.php?id=<?= $cx['id'] ?>" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye"></i> Ver
+                                    <i class="bi bi-eye"></i> Ver Detalhes
                                 </a>
                             </td>
                         </tr>
@@ -227,6 +227,6 @@ include __DIR__.'/includes/footer.php';
     </div>
 </div>
 
-<!-- Bootstrap Icons -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<?php include __DIR__.'/includes/footer.php'; ?>
 </body>
+</html>
