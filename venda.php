@@ -52,9 +52,6 @@ while ($p = $res->fetch_assoc()) {
 }
 
 
-
-
-
 // Buscar vendas suspensas para exibir na lateral
 $vendas_suspensas_arr = [];
 // ...existing code...
@@ -85,9 +82,6 @@ while ($v = $resSuspensas->fetch_assoc()) {
         'total' => $total_venda
     ];
 }
-
-
-
 
 
 

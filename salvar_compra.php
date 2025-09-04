@@ -34,6 +34,13 @@ $materiais = isset($_POST['material_id']) ? $_POST['material_id'] : [];
 $quantidades = isset($_POST['quantidade']) ? $_POST['quantidade'] : [];
 $precos = isset($_POST['preco_unitario']) ? $_POST['preco_unitario'] : [];
 
+// Receber valores de pagamento
+$valor_dinheiro = isset($_POST['valor_dinheiro']) ? floatval($_POST['valor_dinheiro']) : 0;
+$valor_pix = isset($_POST['valor_pix']) ? floatval($_POST['valor_pix']) : 0;
+$valor_cartao = isset($_POST['valor_cartao']) ? floatval($_POST['valor_cartao']) : 0;
+$valor_abater = isset($_POST['valor_abater']) ? floatval($_POST['valor_abater']) : 0;
+$gerar_troco = isset($_POST['gerar_troco']) ? intval($_POST['gerar_troco']) : 0;
+
 if (!$empresa_id || count($materiais) == 0) {
     echo "<script>
         alert('Erro: Dados inválidos!');
@@ -187,6 +194,34 @@ if ($res_fp && $res_fp->num_rows > 0) {
     $id_forma_pagamento = $res_fp2->fetch_assoc()['id'];
 }
 
+// Processar valor a abater do saldo do cliente (se houver cliente selecionado e valor_abater > 0)
+if ($cliente_id > 0 && $valor_abater > 0) {
+    // Verificar saldo atual do cliente
+    $stmt_saldo = $conn->prepare("SELECT saldo FROM clientes WHERE id = ?");
+    $stmt_saldo->bind_param('i', $cliente_id);
+    $stmt_saldo->execute();
+    $res_saldo = $stmt_saldo->get_result();
+    
+    if ($res_saldo && $res_saldo->num_rows > 0) {
+        $saldo_atual = floatval($res_saldo->fetch_assoc()['saldo']);
+        $novo_saldo = $saldo_atual + $valor_abater; // SOMAR para reduzir dívida ou aumentar crédito
+        
+        // Atualizar saldo do cliente
+        $stmt_upd_saldo = $conn->prepare("UPDATE clientes SET saldo = ? WHERE id = ?");
+        $stmt_upd_saldo->bind_param('di', $novo_saldo, $cliente_id);
+        $stmt_upd_saldo->execute();
+        $stmt_upd_saldo->close();
+        
+        // Registrar movimentação no extrato do cliente
+        $descricao_extrato = "Abatimento em compra (valor abatido: R$ " . number_format($valor_abater, 2, ',', '.') . ")";
+        $stmt_extrato = $conn->prepare("INSERT INTO movimentacoes_clientes (cliente_id, tipo, valor, descricao, data_movimentacao, empresa_id, saldo_apos) VALUES (?, 'credito', ?, ?, NOW(), ?, ?)");
+        $stmt_extrato->bind_param('idsid', $cliente_id, $valor_abater, $descricao_extrato, $empresa_id, $novo_saldo);
+        $stmt_extrato->execute();
+        $stmt_extrato->close();
+    }
+    $stmt_saldo->close();
+}
+
 // Inserir compra (nota: tabela usa coluna `id_cliente` e armazena itens em JSON)
 $stmt = $conn->prepare("INSERT INTO compras (id_cliente, empresa_id, data_compra, valor_total, itens, id_forma_pagamento) VALUES (?, ?, NOW(), ?, ?, ?)");
 $stmt->bind_param('iidsi', $cliente_ant_id, $empresa_id, $total, $itens_json, $id_forma_pagamento);
@@ -205,13 +240,27 @@ foreach ($itens_array as $item) {
     $stmt_estoque->close();
 }
 
-// Registrar movimentação no caixa (saida)
-if ($total > 0) {
+// Registrar movimentação no caixa (saida) - apenas valores em dinheiro, pix e cartão
+$valor_caixa = $valor_dinheiro + $valor_pix + $valor_cartao;
+if ($valor_caixa > 0) {
     $stmt_mov = $conn->prepare("INSERT INTO movimentacoes (caixa_id, tipo, valor, descricao, data_movimentacao, empresa_id) VALUES (?, 'saida', ?, ?, NOW(), ?)");
-    $descricao_mov = "Compra ID $compra_id - pagamento";
-    $stmt_mov->bind_param('idsi', $caixa_id, $total, $descricao_mov, $empresa_id);
+    $descricao_mov = "Compra ID $compra_id - pagamento (Dinheiro: R$" . number_format($valor_dinheiro, 2, ',', '.') . 
+                     ", Pix: R$" . number_format($valor_pix, 2, ',', '.') . 
+                     ", Cartão: R$" . number_format($valor_cartao, 2, ',', '.') . ")";
+    if ($valor_abater > 0) {
+        $descricao_mov .= " - Abatido R$" . number_format($valor_abater, 2, ',', '.') . " do saldo do cliente";
+    }
+    $stmt_mov->bind_param('idsi', $caixa_id, $valor_caixa, $descricao_mov, $empresa_id);
     $stmt_mov->execute();
     $stmt_mov->close();
+}
+
+// Limpar compra suspensa do cliente (se houver) após finalização bem-sucedida
+if ($cliente_id > 0) {
+    $stmt_limpar = $conn->prepare("DELETE FROM compras_suspensas WHERE cliente_id = ? AND empresa_id = ?");
+    $stmt_limpar->bind_param('ii', $cliente_id, $empresa_id);
+    $stmt_limpar->execute();
+    $stmt_limpar->close();
 }
 
 // Redireciona ou mostra mensagem de sucesso
