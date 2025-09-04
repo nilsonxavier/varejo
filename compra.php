@@ -281,21 +281,26 @@ var lista_preco_padrao = <?php echo json_encode($lista_preco_padrao); ?>;
         }catch(e){/* noop */}
     }
 
-    // busca produtos via AJAX
+    // busca produtos local (filtra array materiais)
     const resultadoMateriais = document.getElementById('dropdown-materiais');
     const materialInput = document.getElementById('material_input');
     const debounceProdutos = debounce(function(termo){
         if(!termo || termo.length<1){ resultadoMateriais.innerHTML=''; resultadoMateriais.style.display='none'; return; }
-        fetch('ajax/buscar_produto.php?termo='+encodeURIComponent(termo)+'&empresa_id='+encodeURIComponent(empresa_id))
-        .then(r=>r.json()).then(data=>{
-            resultadoMateriais.innerHTML=''; resultadoMateriais.style.display = data.length ? 'block' : 'none';
-            data.forEach(function(mat){
-                const li = document.createElement('li'); li.className='list-group-item list-group-item-action';
-                li.textContent = mat.id+' - '+mat.nome;
-                li.onclick = function(){ materialInput.value = mat.id+' - '+mat.nome; resultadoMateriais.innerHTML=''; resultadoMateriais.style.display='none'; preencherPrecoAutomatico(); document.getElementById('quantidade_input').focus(); };
-                resultadoMateriais.appendChild(li);
-            });
-        }).catch(()=>{ resultadoMateriais.innerHTML=''; resultadoMateriais.style.display='none'; });
+        // filtrar localmente (nome ou id)
+        const termoLower = termo.toLowerCase();
+        const data = materiais.filter(m => String(m.id) === termo || m.nome.toLowerCase().includes(termoLower) || String(m.id) === termoLower);
+        resultadoMateriais.innerHTML=''; resultadoMateriais.style.display = data.length ? 'block' : 'none';
+        data.forEach(function(mat, idx){
+            const li = document.createElement('li'); li.className='list-group-item list-group-item-action';
+            li.tabIndex = 0;
+            li.dataset.idx = idx;
+            li.textContent = mat.id+' - '+mat.nome;
+            li.onclick = function(){ materialInput.value = mat.id+' - '+mat.nome; resultadoMateriais.innerHTML=''; resultadoMateriais.style.display='none'; preencherPrecoAutomatico(); document.getElementById('quantidade_input').focus(); };
+            li.addEventListener('mouseenter', function(){ resultadoMateriais.querySelectorAll('li').forEach(x=>x.classList.remove('active')); this.classList.add('active'); });
+            resultadoMateriais.appendChild(li);
+        });
+        // selecionar primeiro resultado visualmente
+        const first = resultadoMateriais.querySelector('li'); if(first){ resultadoMateriais.querySelectorAll('li').forEach(x=>x.classList.remove('active')); first.classList.add('active'); }
     },180);
 
     if(materialInput){
@@ -318,23 +323,41 @@ var lista_preco_padrao = <?php echo json_encode($lista_preco_padrao); ?>;
         materialInput.addEventListener('blur', function(){ setTimeout(()=>{ resultadoMateriais.innerHTML=''; resultadoMateriais.style.display='none'; },150); });
     }
 
-    // busca clientes via AJAX (debounced)
+    // busca clientes local (filtra array clientes)
     const clienteInput = document.getElementById('cliente');
     const resultadoClientes = document.getElementById('dropdown-clientes');
     if(clienteInput){
         const debCli = debounce(function(termo){
             if(!termo || termo.length<1){ resultadoClientes.innerHTML=''; resultadoClientes.style.display='none'; return; }
-            fetch('ajax/buscar_cliente.php?termo='+encodeURIComponent(termo)+'&empresa_id='+encodeURIComponent(empresa_id))
-            .then(r=>r.json()).then(data=>{
-                resultadoClientes.innerHTML=''; resultadoClientes.style.display = data.length ? 'block' : 'none';
-                data.forEach(function(cli){
-                    const li = document.createElement('li'); li.className='list-group-item list-group-item-action'; li.textContent = cli.id+' - '+cli.nome;
-                    li.onclick = function(){ clienteInput.value = cli.id+' - '+cli.nome; resultadoClientes.innerHTML=''; resultadoClientes.style.display='none'; if(cli.lista_preco_id){ const l = listas_precos.find(x=>x.id==cli.lista_preco_id); document.getElementById('lista_preco').value = l ? (l.id+' - '+l.nome) : cli.lista_preco_id; } document.getElementById('material_input').focus(); };
-                    resultadoClientes.appendChild(li);
-                });
-            }).catch(()=>{ resultadoClientes.innerHTML=''; resultadoClientes.style.display='none'; });
+            const termoLower = termo.toLowerCase();
+            const data = clientes.filter(c => String(c.id) === termo || c.nome.toLowerCase().includes(termoLower) || String(c.id) === termoLower);
+            resultadoClientes.innerHTML=''; resultadoClientes.style.display = data.length ? 'block' : 'none';
+            data.forEach(function(cli, idx){
+                const li = document.createElement('li'); li.className='list-group-item list-group-item-action'; li.tabIndex = 0; li.dataset.idx = idx;
+                li.textContent = cli.id+' - '+cli.nome;
+                li.onclick = function(){ clienteInput.value = cli.id+' - '+cli.nome; resultadoClientes.innerHTML=''; resultadoClientes.style.display='none'; if(cli.lista_preco_id){ const l = listas_precos.find(x=>x.id==cli.lista_preco_id); document.getElementById('lista_preco').value = l ? (l.id+' - '+l.nome) : cli.lista_preco_id; } document.getElementById('material_input').focus(); };
+                li.addEventListener('mouseenter', function(){ resultadoClientes.querySelectorAll('li').forEach(x=>x.classList.remove('active')); this.classList.add('active'); });
+                resultadoClientes.appendChild(li);
+            });
+            // selecionar primeiro cliente
+            const firstCli = resultadoClientes.querySelector('li'); if(firstCli){ resultadoClientes.querySelectorAll('li').forEach(x=>x.classList.remove('active')); firstCli.classList.add('active'); }
         },180);
         clienteInput.addEventListener('input', function(){ debCli(this.value.trim()); });
+        clienteInput.addEventListener('keydown', function(e){
+            if(e.key==='Enter'){
+                e.preventDefault();
+                if(resultadoClientes.style.display==='block'){
+                    const active = resultadoClientes.querySelector('li.active') || resultadoClientes.querySelector('li');
+                    if(active){ clienteInput.value = active.textContent; resultadoClientes.innerHTML=''; resultadoClientes.style.display='none'; if(active) document.getElementById('material_input').focus(); return; }
+                }
+            }
+            if(e.key==='ArrowDown' && resultadoClientes.style.display==='block'){
+                e.preventDefault(); const current = resultadoClientes.querySelector('li.active'); const next = current && current.nextElementSibling ? current.nextElementSibling : resultadoClientes.querySelector('li'); if(current) current.classList.remove('active'); if(next) next.classList.add('active');
+            }
+            if(e.key==='ArrowUp' && resultadoClientes.style.display==='block'){
+                e.preventDefault(); const current = resultadoClientes.querySelector('li.active'); const prev = current && current.previousElementSibling ? current.previousElementSibling : resultadoClientes.querySelector('li:last-child'); if(current) current.classList.remove('active'); if(prev) prev.classList.add('active');
+            }
+        });
         clienteInput.addEventListener('blur', function(){ setTimeout(()=>{ resultadoClientes.innerHTML=''; resultadoClientes.style.display='none'; },150); });
     }
 
