@@ -126,7 +126,7 @@ include __DIR__.'/includes/footer.php';
 <body>
 
 <div class="container py-4">
-    <div class="section-card">
+    <div class="section-card section-card">
         <h2><i class="bi bi-pencil-square"></i> Editar Cliente</h2>
         <form method="post">
                 <?php
@@ -174,7 +174,7 @@ include __DIR__.'/includes/footer.php';
                 <label>Saldo (ex: 100.00 ou -50.00):</label>
                 <input type="text" name="saldo" class="form-control" value="<?= number_format($cliente['saldo'], 2, ',', '.') ?>">
             </div>
-            <button type="submit" name="atualizar_cliente" class="btn btn-primary">
+            <button type="submit" name="atualizar_cliente" class="btn btn-primary btn-responsive">
                 <i class="bi bi-save"></i> Salvar Alterações
             </button>
             <a href="cadastro_clientes.php" class="btn btn-secondary ms-2">Cancelar</a>

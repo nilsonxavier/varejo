@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <div class="login-card">
+    <div class="login-card section-card">
         <h2>NC Recicláveis</h2>
         <?php if (isset($erro)): ?>
             <div class="alert alert-danger text-center"><?php echo $erro; ?></div>

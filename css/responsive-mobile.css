@@ -1,0 +1,553 @@
+/* ==========================================================================
+   SISTEMA ERP - ESTILOS RESPONSIVOS MOBILE-FIRST
+   ========================================================================== */
+
+/* Reset e configurações básicas */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* ==========================================================================
+   UTILITÁRIOS RESPONSIVOS
+   ========================================================================== */
+
+.mobile-only {
+    display: none;
+}
+
+.desktop-only {
+    display: block;
+}
+
+@media (max-width: 767px) {
+    .mobile-only {
+        display: block;
+    }
+    
+    .desktop-only {
+        display: none;
+    }
+}
+
+/* ==========================================================================
+   CONTAINER E LAYOUT RESPONSIVO
+   ========================================================================== */
+
+.container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+
+/* ==========================================================================
+   CARDS RESPONSIVOS
+   ========================================================================== */
+
+.section-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 767px) {
+    .section-card {
+        margin-left: -10px;
+        margin-right: -10px;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+}
+
+@media (max-width: 576px) {
+    .section-card {
+        margin-left: -10px;
+        margin-right: -10px;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        padding: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* ==========================================================================
+   TABELAS RESPONSIVAS
+   ========================================================================== */
+
+.table-responsive-stack {
+    overflow-x: auto;
+}
+
+@media (max-width: 767px) {
+    .table-responsive-stack table,
+    .table-responsive-stack thead,
+    .table-responsive-stack tbody,
+    .table-responsive-stack th,
+    .table-responsive-stack td,
+    .table-responsive-stack tr {
+        display: block;
+    }
+    
+    .table-responsive-stack thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    .table-responsive-stack tr {
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        background: #f8f9fa;
+    }
+    
+    .table-responsive-stack td {
+        border: none;
+        position: relative;
+        padding-left: 50% !important;
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+    
+    .table-responsive-stack td:before {
+        content: attr(data-label) ": ";
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: bold;
+        color: #333;
+    }
+}
+
+/* ==========================================================================
+   FORMULÁRIOS RESPONSIVOS
+   ========================================================================== */
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-control {
+    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    outline: none;
+}
+
+@media (max-width: 576px) {
+    .form-control {
+        font-size: 16px; /* Evita zoom no iOS */
+        padding: 12px 15px;
+        width: 100%;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #333;
+    }
+}
+
+/* ==========================================================================
+   BOTÕES RESPONSIVOS
+   ========================================================================== */
+
+.btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 576px) {
+    .btn {
+        padding: 12px 20px;
+        font-size: 16px;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .btn-group-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-group-mobile .btn {
+        width: 100%;
+        margin: 0;
+    }
+}
+
+/* Botões de ação em cards */
+.btn-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+@media (max-width: 767px) {
+    .btn-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .btn-actions .btn {
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
+   MODAIS RESPONSIVOS
+   ========================================================================== */
+
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 10px;
+        max-width: none;
+        width: calc(100% - 20px);
+    }
+    
+    .modal-content {
+        border-radius: 12px;
+    }
+    
+    .modal-header {
+        padding: 15px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .modal-body {
+        padding: 15px;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    
+    .modal-footer {
+        padding: 15px;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+        margin: 0;
+    }
+}
+
+/* ==========================================================================
+   NAVEGAÇÃO E BREADCRUMB
+   ========================================================================== */
+
+.breadcrumb-mobile {
+    background: #f8f9fa;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 576px) {
+    .breadcrumb-mobile {
+        margin-left: -10px;
+        margin-right: -10px;
+        border-radius: 0;
+        font-size: 14px;
+    }
+}
+
+/* ==========================================================================
+   LISTAS E ITENS
+   ========================================================================== */
+
+.list-group-item {
+    border: 1px solid #dee2e6;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.list-group-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 767px) {
+    .list-group-item {
+        padding: 15px;
+        margin-bottom: 10px;
+    }
+    
+    .item-content {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .item-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    
+    .item-actions .btn {
+        flex: 1;
+        min-width: 0;
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+}
+
+/* ==========================================================================
+   ALERTAS E NOTIFICAÇÕES
+   ========================================================================== */
+
+.alert {
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border: none;
+}
+
+@media (max-width: 576px) {
+    .alert {
+        margin-left: -10px;
+        margin-right: -10px;
+        border-radius: 0;
+        padding: 15px;
+    }
+}
+
+/* ==========================================================================
+   LOADING E ESTADOS
+   ========================================================================== */
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+/* ==========================================================================
+   IMPRESSÃO
+   ========================================================================== */
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .section-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        margin-bottom: 20px;
+        page-break-inside: avoid;
+    }
+    
+    .btn {
+        display: none;
+    }
+    
+    .table {
+        font-size: 12px;
+    }
+}
+
+/* ==========================================================================
+   TEMA ESCURO - MOBILE
+   ========================================================================== */
+
+[data-theme="dark"] {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --border-color: #404040;
+}
+
+[data-theme="dark"] .section-card {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .form-control {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .form-control:focus {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: #0d6efd;
+}
+
+/* ==========================================================================
+   UTILITÁRIOS ESPECÍFICOS DO ERP
+   ========================================================================== */
+
+/* Status badges */
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-ativo { background: #d4edda; color: #155724; }
+.status-inativo { background: #f8d7da; color: #721c24; }
+.status-pendente { background: #fff3cd; color: #856404; }
+
+/* Valores monetários */
+.valor-positivo { color: #28a745; font-weight: 600; }
+.valor-negativo { color: #dc3545; font-weight: 600; }
+.valor-neutro { color: #6c757d; font-weight: 500; }
+
+/* Indicadores visuais */
+.indicador {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.indicador-verde { background: #28a745; }
+.indicador-vermelho { background: #dc3545; }
+.indicador-amarelo { background: #ffc107; }
+.indicador-azul { background: #007bff; }
+
+/* ==========================================================================
+   ANIMAÇÕES E TRANSIÇÕES
+   ========================================================================== */
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Hover effects */
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.hover-scale:hover {
+    transform: scale(1.02);
+}
+
+/* ==========================================================================
+   RESPONSIVE UTILITIES
+   ========================================================================== */
+
+/* Spacing responsivo */
+@media (max-width: 576px) {
+    .py-4 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+    .px-3 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+    .mb-4 { margin-bottom: 1.5rem !important; }
+    .mt-4 { margin-top: 1.5rem !important; }
+}
+
+/* Grid responsivo */
+@media (max-width: 767px) {
+    .row-cols-mobile-1 > * {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+}
+
+/* Text responsivo */
+@media (max-width: 576px) {
+    .display-1, .display-2, .display-3 {
+        font-size: 1.75rem;
+    }
+    
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.3rem; }
+    h3 { font-size: 1.1rem; }
+}
+
+/* ==========================================================================
+   FIM DOS ESTILOS RESPONSIVOS
+   ========================================================================== */

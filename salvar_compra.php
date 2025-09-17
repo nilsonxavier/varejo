@@ -86,7 +86,7 @@ if (!$caixa) {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary">Abrir caixa e salvar compra</button>
+                            <button type="submit" class="btn btn-primary btn-responsive">Abrir caixa e salvar compra</button>
                         </div>
                     </form>
                 </div>

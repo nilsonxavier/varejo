@@ -110,7 +110,7 @@ include __DIR__.'/includes/navbar.php';
 
 
 
-    <button type="button" class="btn btn-primary" onclick="adicionarItem()">Adicionar Item</button><br>
+    <button type="button" class="btn btn-primary btn-responsive" onclick="adicionarItem()">Adicionar Item</button><br>
     <div class="form-group">
         <label for="valor_total">Valor Total:</label>
         <input type="text" class="form-control" id="valor_total" name="valor_total" readonly>

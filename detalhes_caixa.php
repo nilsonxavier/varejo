@@ -40,8 +40,8 @@ include __DIR__.'/includes/navbar.php';
 
     <div class="row g-3">
         <div class="col-md-4">
-            <div class="card border-primary">
-                <div class="card-body">
+            <div class="card border-primary section-card">
+                <div class="card-body section-card">
                     <h5 class="card-title">Abertura</h5>
                     <p class="card-text mb-1"><strong>Aberto em:</strong><br> <?= $caixa['data_abertura'] ?></p>
                     <p class="card-text"><strong>Fechado em:</strong><br> <?= $caixa['data_fechamento'] ?></p>
@@ -52,32 +52,32 @@ include __DIR__.'/includes/navbar.php';
         <div class="col-md-8">
             <div class="row g-3">
                 <div class="col-md-4">
-                    <div class="card text-bg-secondary">
-                        <div class="card-body">
+                    <div class="card text-bg-secondary section-card">
+                        <div class="card-body section-card">
                             <h6 class="card-title"><i class="bi bi-currency-dollar me-1"></i>Valor Inicial</h6>
                             <p class="card-text fs-5">R$ <?= number_format($caixa['valor_inicial'], 2, ',', '.') ?></p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card text-bg-success">
-                        <div class="card-body">
+                    <div class="card text-bg-success section-card">
+                        <div class="card-body section-card">
                             <h6 class="card-title"><i class="bi bi-arrow-down-circle me-1"></i>Entradas</h6>
                             <p class="card-text fs-5">R$ <?= number_format($total_entradas, 2, ',', '.') ?></p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card text-bg-danger">
-                        <div class="card-body">
+                    <div class="card text-bg-danger section-card">
+                        <div class="card-body section-card">
                             <h6 class="card-title"><i class="bi bi-arrow-up-circle me-1"></i>Saídas</h6>
                             <p class="card-text fs-5">R$ <?= number_format($total_saidas, 2, ',', '.') ?></p>
                         </div>
                     </div>
                 </div>
                 <div class="col-12">
-                    <div class="card text-bg-primary">
-                        <div class="card-body">
+                    <div class="card text-bg-primary section-card">
+                        <div class="card-body section-card">
                             <h6 class="card-title"><i class="bi bi-wallet2 me-1"></i>Saldo Final</h6>
                             <p class="card-text fs-4 fw-bold">R$ <?= number_format($saldo, 2, ',', '.') ?></p>
                         </div>
@@ -91,7 +91,7 @@ include __DIR__.'/includes/navbar.php';
 
     <h4 class="mb-3"><i class="bi bi-journal-text me-2"></i>Movimentações</h4>
     <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle">
+        <div class="table-responsive"><table class="table table-striped table-hover align-middle">
             <thead class="table-light">
                 <tr>
                     <th>Tipo</th>

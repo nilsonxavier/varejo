@@ -14,11 +14,12 @@
 
 .nav-link {
     transition: color 0.3s ease, background-color 0.3s ease;
+    padding: 0.75rem 1rem;
 }
 
 .nav-link:hover,
 .dropdown-item:hover {
-    color: #ffffff;
+    color: #ffffff !important;
     background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -37,12 +38,63 @@
     padding: 0.5rem 1rem;
 }
 
+.dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+/* Melhorias para mobile */
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background: rgba(33, 37, 41, 0.98);
+        backdrop-filter: blur(10px);
+        margin-top: 1rem;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .navbar-nav {
+        width: 100%;
+    }
+    
+    .nav-item {
+        margin-bottom: 0.5rem;
+    }
+    
+    .dropdown-menu {
+        position: static !important;
+        transform: none !important;
+        width: 100%;
+        box-shadow: none;
+        background: rgba(52, 58, 64, 0.3);
+        margin: 0;
+        border: none;
+        padding: 0.5rem 0;
+    }
+    
+    .dropdown-item {
+        padding-left: 2rem;
+        color: #adb5bd;
+    }
+    
+    .dropdown-item:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: #ffffff;
+    }
+    
+    .nav-link.dropdown-toggle::after {
+        float: right;
+        margin-top: 0.3rem;
+    }
+}
+
+/* Animação suave */
 @keyframes fadeIn {
     from {
         opacity: 0;
         transform: translateY(-5px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);

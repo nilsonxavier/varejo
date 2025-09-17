@@ -41,29 +41,31 @@ function atualizarComponentesTema() {
     // Verificar se está no tema escuro
     const isDark = document.querySelector(':root').style.getPropertyValue('--bs-body-bg') === '#1a1a1a';
     
-    // Atualizar charts se existirem
-    if (typeof Chart !== 'undefined' && Chart.instances) {
-        Chart.instances.forEach(chart => {
-            if (chart && chart.options) {
-                // Atualizar cores do gráfico baseado no tema
-                const textColor = isDark ? '#ffffff' : '#333333';
-                const gridColor = isDark ? '#495057' : '#dee2e6';
-                
-                if (chart.options.plugins && chart.options.plugins.legend) {
-                    chart.options.plugins.legend.labels.color = textColor;
-                }
-                
-                if (chart.options.scales) {
-                    Object.keys(chart.options.scales).forEach(scaleKey => {
-                        const scale = chart.options.scales[scaleKey];
-                        if (scale.ticks) scale.ticks.color = textColor;
-                        if (scale.grid) scale.grid.color = gridColor;
-                    });
-                }
-                
-                chart.update();
+    // Atualizar charts apenas se Chart.js estiver carregado e houver gráficos na página
+    if (typeof Chart !== 'undefined' && document.querySelector('canvas')) {
+        try {
+            // Chart.js v3+ usa Chart.instances como Map
+            if (Chart.instances && typeof Chart.instances.forEach === 'function') {
+                Chart.instances.forEach(chart => {
+                    if (chart && chart.options) {
+                        updateChartTheme(chart, isDark);
+                    }
+                });
             }
-        });
+            // Chart.js v3+ alternativo - buscar por instâncias no DOM
+            else {
+                const chartElements = document.querySelectorAll('canvas');
+                chartElements.forEach(canvas => {
+                    const chart = Chart.getChart(canvas);
+                    if (chart && chart.options) {
+                        updateChartTheme(chart, isDark);
+                    }
+                });
+            }
+        } catch (error) {
+            // Se houver erro com Chart.js, apenas log sem quebrar a funcionalidade
+            console.warn('Aviso: Erro ao atualizar gráficos para novo tema:', error.message);
+        }
     }
     
     // Atualizar Select2 se existir
@@ -78,6 +80,28 @@ function atualizarComponentesTema() {
             }
         });
     }
+}
+
+// Função auxiliar para atualizar tema de um gráfico específico
+function updateChartTheme(chart, isDark) {
+    if (!chart || !chart.options) return;
+    
+    const textColor = isDark ? '#ffffff' : '#333333';
+    const gridColor = isDark ? '#495057' : '#dee2e6';
+    
+    if (chart.options.plugins && chart.options.plugins.legend) {
+        chart.options.plugins.legend.labels.color = textColor;
+    }
+    
+    if (chart.options.scales) {
+        Object.keys(chart.options.scales).forEach(scaleKey => {
+            const scale = chart.options.scales[scaleKey];
+            if (scale.ticks) scale.ticks.color = textColor;
+            if (scale.grid) scale.grid.color = gridColor;
+        });
+    }
+    
+    chart.update();
 }
 
 // Função para aplicar configurações de impressão via JavaScript

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Tempo de geração: 02/09/2025 às 04:30
+-- Tempo de geração: 17/09/2025 às 00:52
 -- Versão do servidor: 10.11.9-MariaDB-deb12-log
 -- Versão do PHP: 8.2.29
 
@@ -64,7 +64,8 @@ INSERT INTO `caixas` (`id`, `usuario_id`, `empresa_id`, `data_abertura`, `valor_
 (23, 1, 1, '2025-08-30 22:53:00', 30.00, '2025-08-30 22:55:16', 50.00, 'fechado'),
 (24, 1, 1, '2025-08-30 22:55:21', 50.00, '2025-08-30 22:55:26', 50.00, 'fechado'),
 (25, 1, 1, '2025-08-30 22:55:54', 50.00, '2025-08-31 01:16:12', 14.00, 'fechado'),
-(26, 1, 1, '2025-09-01 23:47:18', 50.00, NULL, NULL, 'aberto');
+(26, 1, 1, '2025-09-01 23:47:18', 50.00, '2025-09-02 02:43:15', 46.00, 'fechado'),
+(27, 1, 1, '2025-09-04 00:21:44', 50.00, NULL, NULL, 'aberto');
 
 -- --------------------------------------------------------
 
@@ -123,10 +124,10 @@ CREATE TABLE `clientes` (
 --
 
 INSERT INTO `clientes` (`id`, `nome`, `telefone`, `email`, `lista_preco_id`, `created_at`, `cpf`, `endereco`, `cep`, `saldo`, `empresa_id`) VALUES
-(1, 'pedro paulo santos pereira xavier', '85991853813', 'nilsonxavier12@gmail.com', 9, '2025-06-15 19:38:24', '', 'rua cristo redentor', '60762465', 20.00, 1),
+(1, 'pedro paulo santos pereira xavier', '85991853813', 'nilsonxavier12@gmail.com', 9, '2025-06-15 19:38:24', '', 'rua cristo redentor', '60762465', 45.00, 1),
 (2, 'nilson xavier', '85991853813', 'nilson@gmail.com', NULL, '2025-06-17 20:11:00', '10397258488', 'rua marcelo costa 770', '60766190', 0.00, 2),
-(14, 'NILSON XAVIER DE FREITAS', '', 'nilsonxavier12@gmail.com', 9, '2025-09-02 03:48:28', '558456', 'Desembargador Baltar', '60710471', 20.00, 1),
-(16, 'Geraldo', '8593254', 'dsasd513@gmail.com', 9, '2025-09-02 04:08:33', '78956', 'rua mossoro', '', 0.00, 1);
+(14, 'NILSON XAVIER DE FREITAS', '', 'nilsonxavier12@gmail.com', 9, '2025-09-02 03:48:28', '558456', 'Desembargador Baltar', '60710471', 15.00, 1),
+(18, 'Alisson Oliveira', '', '', 9, '2025-09-04 11:42:27', '5662465456', '', '', 0.00, 1);
 
 -- --------------------------------------------------------
 
@@ -167,7 +168,24 @@ INSERT INTO `clientes_anterior` (`id`, `nome`, `rua`, `numero`, `cep`, `bairro`,
 (16, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (17, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (18, 'Cliente 0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(19, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+(19, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(20, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(21, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(22, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(23, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(24, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(25, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(26, 'Cliente 0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(27, 'Cliente 0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(28, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(29, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(30, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(31, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(32, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(33, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(34, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(35, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(36, 'pedro paulo santos pereira xavier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -198,7 +216,63 @@ INSERT INTO `compras` (`id`, `id_cliente`, `empresa_id`, `data_compra`, `valor_t
 (9, 16, 1, '2025-08-31 00:17:37', 2.50, '[{\"material_id\":1,\"quantidade\":5,\"preco_unitario\":0.5,\"subtotal\":2.5}]', 1),
 (10, 17, 1, '2025-08-31 00:35:10', 1.00, '[{\"material_id\":2,\"quantidade\":1,\"preco_unitario\":1,\"subtotal\":1}]', 1),
 (11, 18, 1, '2025-08-31 00:36:00', 2.50, '[{\"material_id\":1,\"quantidade\":5,\"preco_unitario\":0.5,\"subtotal\":2.5}]', 1),
-(12, 19, 1, '2025-09-01 23:47:23', 14.00, '[{\"material_id\":12,\"quantidade\":10,\"preco_unitario\":0.9,\"subtotal\":9},{\"material_id\":11,\"quantidade\":10,\"preco_unitario\":0.5,\"subtotal\":5}]', 1);
+(12, 19, 1, '2025-09-01 23:47:23', 14.00, '[{\"material_id\":12,\"quantidade\":10,\"preco_unitario\":0.9,\"subtotal\":9},{\"material_id\":11,\"quantidade\":10,\"preco_unitario\":0.5,\"subtotal\":5}]', 1),
+(13, 20, 1, '2025-09-04 00:21:51', 45.00, '[{\"material_id\":12,\"quantidade\":45,\"preco_unitario\":1,\"subtotal\":45}]', 1),
+(14, 21, 1, '2025-09-04 00:22:42', 45.00, '[{\"material_id\":12,\"quantidade\":45,\"preco_unitario\":1,\"subtotal\":45}]', 1),
+(15, 22, 1, '2025-09-04 00:31:02', 45.00, '[{\"material_id\":12,\"quantidade\":45,\"preco_unitario\":1,\"subtotal\":45}]', 1),
+(16, 23, 1, '2025-09-04 00:33:33', 5.00, '[{\"material_id\":12,\"quantidade\":5,\"preco_unitario\":1,\"subtotal\":5}]', 1),
+(17, 24, 1, '2025-09-04 00:34:50', 40.00, '[{\"material_id\":12,\"quantidade\":40,\"preco_unitario\":1,\"subtotal\":40}]', 1),
+(18, 25, 1, '2025-09-04 00:42:03', 5.00, '[{\"material_id\":12,\"quantidade\":5,\"preco_unitario\":1,\"subtotal\":5}]', 1),
+(19, 26, 1, '2025-09-04 00:42:22', 9.00, '[{\"material_id\":12,\"quantidade\":10,\"preco_unitario\":0.9,\"subtotal\":9}]', 1),
+(20, 27, 1, '2025-09-04 00:56:47', 4.50, '[{\"material_id\":12,\"quantidade\":5,\"preco_unitario\":0.9,\"subtotal\":4.5}]', 1),
+(21, 28, 1, '2025-09-16 21:46:27', 10.00, '[{\"material_id\":12,\"quantidade\":10,\"preco_unitario\":1,\"subtotal\":10}]', 1),
+(22, 29, 1, '2025-09-16 21:46:30', 10.00, '[{\"material_id\":12,\"quantidade\":10,\"preco_unitario\":1,\"subtotal\":10}]', 1),
+(23, 30, 1, '2025-09-16 21:46:32', 10.00, '[{\"material_id\":12,\"quantidade\":10,\"preco_unitario\":1,\"subtotal\":10}]', 1),
+(24, 31, 1, '2025-09-16 21:46:34', 10.00, '[{\"material_id\":12,\"quantidade\":10,\"preco_unitario\":1,\"subtotal\":10}]', 1),
+(25, 32, 1, '2025-09-16 21:46:37', 10.00, '[{\"material_id\":12,\"quantidade\":10,\"preco_unitario\":1,\"subtotal\":10}]', 1),
+(26, 33, 1, '2025-09-16 21:46:39', 10.00, '[{\"material_id\":12,\"quantidade\":10,\"preco_unitario\":1,\"subtotal\":10}]', 1),
+(27, 34, 1, '2025-09-16 21:46:41', 10.00, '[{\"material_id\":12,\"quantidade\":10,\"preco_unitario\":1,\"subtotal\":10}]', 1),
+(28, 35, 1, '2025-09-16 21:46:43', 10.00, '[{\"material_id\":12,\"quantidade\":10,\"preco_unitario\":1,\"subtotal\":10}]', 1),
+(29, 36, 1, '2025-09-16 21:46:46', 10.00, '[{\"material_id\":12,\"quantidade\":10,\"preco_unitario\":1,\"subtotal\":10}]', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `compras_suspensas`
+--
+
+CREATE TABLE `compras_suspensas` (
+  `id` int(11) NOT NULL,
+  `cliente_id` int(11) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `empresa_id` int(11) NOT NULL,
+  `compra_json` text NOT NULL,
+  `data_criacao` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `configuracoes`
+--
+
+CREATE TABLE `configuracoes` (
+  `id` int(11) NOT NULL,
+  `empresa_id` int(11) NOT NULL,
+  `tamanho_papel` enum('A4','80mm','60mm') NOT NULL DEFAULT 'A4',
+  `tema_dark` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `configuracoes`
+--
+
+INSERT INTO `configuracoes` (`id`, `empresa_id`, `tamanho_papel`, `tema_dark`, `created_at`, `updated_at`) VALUES
+(1, 2, 'A4', 0, '2025-09-04 04:10:05', '2025-09-04 04:10:05'),
+(2, 1, '60mm', 0, '2025-09-04 04:10:05', '2025-09-17 00:43:43'),
+(3, 3, 'A4', 0, '2025-09-04 04:10:05', '2025-09-04 04:10:05');
 
 -- --------------------------------------------------------
 
@@ -244,7 +318,8 @@ CREATE TABLE `empresas` (
 
 INSERT INTO `empresas` (`id`, `razao_social`, `nome_fantasia`, `cnpj`, `email`, `telefone`, `endereco`, `cidade`, `estado`, `cep`, `criado_em`) VALUES
 (1, 'Hightec', 'Hightec', '39820695000193', 'nilson@hightectelecom.com.br', '85991853813', 'rua marcelo costa 770', 'fortaleza', 'ce', '60762376', '2025-06-16 05:57:16'),
-(2, 'NC PAPELAO', 'NC PAPELAO', '19.921.071/0001-55', 'financeiro@hightectelecom.com.br', '', 'rua 24 de maio 535', 'fortaleza', 'ce', '', '2025-06-29 20:30:29');
+(2, 'NC PAPELAO', 'NC PAPELAO', '19.921.071/0001-55', 'financeiro@hightectelecom.com.br', '', 'rua 24 de maio 535', 'fortaleza', 'ce', '', '2025-06-29 20:30:29'),
+(3, 'NC SACOLAS', 'NC SACOLAS', '3985215789652', 'ncsacola@gmail.com', '85991853813', 'rua 24 de maio 535', 'fortaleza', 'ce', '60766190', '2025-09-02 14:52:28');
 
 -- --------------------------------------------------------
 
@@ -288,7 +363,35 @@ INSERT INTO `estoque` (`id`, `material_id`, `tipo`, `quantidade`, `descricao`, `
 (44, 11, 'entrada', 55.00, '0', '2025-09-01 22:31:36', 1),
 (45, 12, 'entrada', 10.00, 'ajuste estoque', '2025-09-01 22:35:57', 1),
 (46, 12, 'entrada', 10.00, 'Compra ID 12', '2025-09-01 23:47:23', 1),
-(47, 11, 'entrada', 10.00, 'Compra ID 12', '2025-09-01 23:47:23', 1);
+(47, 11, 'entrada', 10.00, 'Compra ID 12', '2025-09-01 23:47:23', 1),
+(48, 12, 'saida', 10.00, 'Venda ID 63', '2025-09-02 01:47:14', 1),
+(49, 12, 'saida', 5.00, 'Venda ID 64', '2025-09-02 01:48:23', 1),
+(50, 11, 'saida', 3.00, 'Venda ID 64', '2025-09-02 01:48:23', 1),
+(51, 12, 'saida', 5.00, 'Venda ID 65', '2025-09-02 01:49:58', 1),
+(52, 12, 'saida', 5.00, 'Venda ID 66', '2025-09-02 01:53:05', 1),
+(53, 12, 'saida', 5.00, 'Venda ID 67', '2025-09-02 01:55:18', 1),
+(54, 12, 'saida', 5.00, 'Venda ID 68', '2025-09-02 02:09:04', 1),
+(55, 12, 'saida', 5.00, 'Venda ID 69', '2025-09-02 02:10:48', 1),
+(56, 12, 'entrada', 250.00, 'compra', '2025-09-02 02:11:52', 1),
+(57, 11, 'saida', 5.00, 'Venda ID 70', '2025-09-02 02:42:40', 1),
+(58, 12, 'entrada', 45.00, 'Compra ID 13', '2025-09-04 00:21:52', 1),
+(59, 12, 'entrada', 45.00, 'Compra ID 14', '2025-09-04 00:22:42', 1),
+(60, 12, 'entrada', 45.00, 'Compra ID 15', '2025-09-04 00:31:02', 1),
+(61, 12, 'entrada', 5.00, 'Compra ID 16', '2025-09-04 00:33:33', 1),
+(62, 12, 'entrada', 40.00, 'Compra ID 17', '2025-09-04 00:34:50', 1),
+(63, 12, 'entrada', 5.00, 'Compra ID 18', '2025-09-04 00:42:03', 1),
+(64, 12, 'entrada', 10.00, 'Compra ID 19', '2025-09-04 00:42:22', 1),
+(65, 12, 'entrada', 5.00, 'Compra ID 20', '2025-09-04 00:56:47', 1),
+(66, 13, 'saida', 2.00, 'Venda ID 71', '2025-09-04 08:44:50', 1),
+(67, 12, 'entrada', 10.00, 'Compra ID 21', '2025-09-16 21:46:27', 1),
+(68, 12, 'entrada', 10.00, 'Compra ID 22', '2025-09-16 21:46:30', 1),
+(69, 12, 'entrada', 10.00, 'Compra ID 23', '2025-09-16 21:46:32', 1),
+(70, 12, 'entrada', 10.00, 'Compra ID 24', '2025-09-16 21:46:35', 1),
+(71, 12, 'entrada', 10.00, 'Compra ID 25', '2025-09-16 21:46:37', 1),
+(72, 12, 'entrada', 10.00, 'Compra ID 26', '2025-09-16 21:46:39', 1),
+(73, 12, 'entrada', 10.00, 'Compra ID 27', '2025-09-16 21:46:41', 1),
+(74, 12, 'entrada', 10.00, 'Compra ID 28', '2025-09-16 21:46:44', 1),
+(75, 12, 'entrada', 10.00, 'Compra ID 29', '2025-09-16 21:46:46', 1);
 
 -- --------------------------------------------------------
 
@@ -396,7 +499,9 @@ INSERT INTO `materiais` (`id`, `nome`, `empresa_id`) VALUES
 (2, 'papelao fardo', 2),
 (7, 'papelao nc', 2),
 (11, 'papel', 1),
-(12, 'ferro', 1);
+(12, 'ferro', 1),
+(13, 'cobre misto', 1),
+(14, 'cobre mel', 1);
 
 -- --------------------------------------------------------
 
@@ -436,7 +541,23 @@ INSERT INTO `movimentacoes` (`id`, `caixa_id`, `empresa_id`, `tipo`, `valor`, `d
 (56, 25, 1, 'entrada', 5.00, 'Venda ID 57 - pagamento em dinheiro', '2025-08-31 00:42:27'),
 (57, 25, 1, 'entrada', 1.00, 'Venda ID 60 - pagamento em dinheiro', '2025-08-31 00:57:12'),
 (58, 25, 1, 'entrada', 0.50, 'Venda ID 61 - pagamento em dinheiro', '2025-08-31 00:57:31'),
-(59, 26, 1, 'saida', 14.00, 'Compra ID 12 - pagamento', '2025-09-01 23:47:24');
+(59, 26, 1, 'saida', 14.00, 'Compra ID 12 - pagamento', '2025-09-01 23:47:24'),
+(60, 26, 1, 'entrada', 5.00, 'Venda ID 67 - pagamento em dinheiro', '2025-09-02 01:55:18'),
+(61, 26, 1, 'entrada', 5.00, 'Venda ID 69 - pagamento em dinheiro', '2025-09-02 02:10:48'),
+(62, 27, 1, 'saida', 10.00, 'Compra ID 17 - pagamento (Dinheiro: R$10,00, Pix: R$0,00, CartÃ£o: R$0,00) - Abatido R$30,00 do saldo do cliente', '2025-09-04 00:34:50'),
+(63, 27, 1, 'saida', 5.00, 'Compra ID 18 - pagamento (Dinheiro: R$0,00, Pix: R$5,00, CartÃ£o: R$0,00)', '2025-09-04 00:42:03'),
+(64, 27, 1, 'saida', 9.00, 'Compra ID 19 - pagamento (Dinheiro: R$0,00, Pix: R$9,00, CartÃ£o: R$0,00)', '2025-09-04 00:42:23'),
+(65, 27, 1, 'saida', 4.50, 'Compra ID 20 - pagamento (Dinheiro: R$4,50, Pix: R$0,00, CartÃ£o: R$0,00)', '2025-09-04 00:56:47'),
+(66, 27, 1, 'entrada', 70.00, 'Venda ID 71 - pagamento em dinheiro', '2025-09-04 08:44:50'),
+(67, 27, 1, 'saida', 5.00, 'Compra ID 21 - pagamento (Dinheiro: R$5,00, Pix: R$0,00, CartÃ£o: R$0,00) - Abatido R$5,00 do saldo do cliente', '2025-09-16 21:46:27'),
+(68, 27, 1, 'saida', 5.00, 'Compra ID 22 - pagamento (Dinheiro: R$5,00, Pix: R$0,00, CartÃ£o: R$0,00) - Abatido R$5,00 do saldo do cliente', '2025-09-16 21:46:30'),
+(69, 27, 1, 'saida', 5.00, 'Compra ID 23 - pagamento (Dinheiro: R$5,00, Pix: R$0,00, CartÃ£o: R$0,00) - Abatido R$5,00 do saldo do cliente', '2025-09-16 21:46:33'),
+(70, 27, 1, 'saida', 5.00, 'Compra ID 24 - pagamento (Dinheiro: R$5,00, Pix: R$0,00, CartÃ£o: R$0,00) - Abatido R$5,00 do saldo do cliente', '2025-09-16 21:46:35'),
+(71, 27, 1, 'saida', 5.00, 'Compra ID 25 - pagamento (Dinheiro: R$5,00, Pix: R$0,00, CartÃ£o: R$0,00) - Abatido R$5,00 do saldo do cliente', '2025-09-16 21:46:37'),
+(72, 27, 1, 'saida', 5.00, 'Compra ID 26 - pagamento (Dinheiro: R$5,00, Pix: R$0,00, CartÃ£o: R$0,00) - Abatido R$5,00 do saldo do cliente', '2025-09-16 21:46:39'),
+(73, 27, 1, 'saida', 5.00, 'Compra ID 27 - pagamento (Dinheiro: R$5,00, Pix: R$0,00, CartÃ£o: R$0,00) - Abatido R$5,00 do saldo do cliente', '2025-09-16 21:46:42'),
+(74, 27, 1, 'saida', 5.00, 'Compra ID 28 - pagamento (Dinheiro: R$5,00, Pix: R$0,00, CartÃ£o: R$0,00) - Abatido R$5,00 do saldo do cliente', '2025-09-16 21:46:44'),
+(75, 27, 1, 'saida', 5.00, 'Compra ID 29 - pagamento (Dinheiro: R$5,00, Pix: R$0,00, CartÃ£o: R$0,00) - Abatido R$5,00 do saldo do cliente', '2025-09-16 21:46:46');
 
 -- --------------------------------------------------------
 
@@ -515,7 +636,23 @@ INSERT INTO `movimentacoes_clientes` (`id`, `cliente_id`, `tipo`, `valor`, `desc
 (58, 1, 'credito', 30.00, '', '2025-09-02 00:35:23', NULL, 1, -70.00),
 (59, 1, 'devedor', 30.00, '', '2025-09-02 00:35:34', NULL, 1, -100.00),
 (60, 14, 'credito', 20.00, '', '2025-09-02 00:59:40', NULL, 1, 20.00),
-(61, 1, 'credito', 120.00, '', '2025-09-02 00:59:48', NULL, 1, 20.00);
+(61, 1, 'credito', 120.00, '', '2025-09-02 00:59:48', NULL, 1, 20.00),
+(62, 1, 'debito', 10.00, '', '2025-09-02 01:35:10', NULL, 1, 10.00),
+(63, 14, 'debito', 5.00, 'Venda ID 66 - fiado', '2025-09-02 01:53:05', 66, 1, 15.00),
+(64, 1, 'credito', 45.00, 'Abatimento em compra (valor abatido: R$ 45,00)', '2025-09-04 00:22:42', NULL, 1, -35.00),
+(65, 1, 'credito', 45.00, 'Abatimento em compra (valor abatido: R$ 45,00)', '2025-09-04 00:31:01', NULL, 1, -80.00),
+(66, 1, 'credito', 5.00, 'Abatimento em compra (valor abatido: R$ 5,00)', '2025-09-04 00:33:33', NULL, 1, -75.00),
+(67, 1, 'credito', 30.00, 'Abatimento em compra (valor abatido: R$ 30,00)', '2025-09-04 00:34:49', NULL, 1, -45.00),
+(68, 1, 'credito', 45.00, 'quitacao divida', '2025-09-04 01:36:21', NULL, 1, 0.00),
+(69, 1, 'credito', 5.00, 'Abatimento em compra (valor abatido: R$ 5,00)', '2025-09-16 21:46:26', NULL, 1, 5.00),
+(70, 1, 'credito', 5.00, 'Abatimento em compra (valor abatido: R$ 5,00)', '2025-09-16 21:46:30', NULL, 1, 10.00),
+(71, 1, 'credito', 5.00, 'Abatimento em compra (valor abatido: R$ 5,00)', '2025-09-16 21:46:32', NULL, 1, 15.00),
+(72, 1, 'credito', 5.00, 'Abatimento em compra (valor abatido: R$ 5,00)', '2025-09-16 21:46:34', NULL, 1, 20.00),
+(73, 1, 'credito', 5.00, 'Abatimento em compra (valor abatido: R$ 5,00)', '2025-09-16 21:46:37', NULL, 1, 25.00),
+(74, 1, 'credito', 5.00, 'Abatimento em compra (valor abatido: R$ 5,00)', '2025-09-16 21:46:39', NULL, 1, 30.00),
+(75, 1, 'credito', 5.00, 'Abatimento em compra (valor abatido: R$ 5,00)', '2025-09-16 21:46:41', NULL, 1, 35.00),
+(76, 1, 'credito', 5.00, 'Abatimento em compra (valor abatido: R$ 5,00)', '2025-09-16 21:46:43', NULL, 1, 40.00),
+(77, 1, 'credito', 5.00, 'Abatimento em compra (valor abatido: R$ 5,00)', '2025-09-16 21:46:46', NULL, 1, 45.00);
 
 -- --------------------------------------------------------
 
@@ -650,7 +787,8 @@ INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `tipo`, `empresa_id`) VA
 (15, 'papelao', 'papelao@gmail.com', '$2y$10$IiW7EqCEBglhX263IT9hMOOtb.Uyk/v/rFNXdAt.gueyceYne7dr.', 'admin', 2),
 (18, 'ttbum', '1111@gmail', '$2y$10$yiypy8UUs.KI90/4T9FdruLpjrN1a.r/KFsPNUmg9q/dkVsClZyUC', 'vendedor', 2),
 (19, 'pedro', 'abdc@gmail.com', '$2y$10$BMleRnPM.kMHHhyw1PQl2u4QNR3UkTkHdaM4uN4ZaE6aXYq39kOTa', 'vendedor', 1),
-(20, 'teste', '123@gmail', '$2y$10$QySTo5A0UFvh3dmTQR9SH.yF5Tbixp0LyH3y9jI0uKwU3LyOVyYY.', 'estoquista', 1);
+(20, 'teste', '123@gmail', '$2y$10$QySTo5A0UFvh3dmTQR9SH.yF5Tbixp0LyH3y9jI0uKwU3LyOVyYY.', 'estoquista', 1),
+(21, 'nilson', 'ncsacola@gmail.com', '$2y$10$FwRy7oDv3yPnCGLmRUbHc.1X1FvOEPwXIRi8XGUjMGwZHjFNacP9i', 'admin', 3);
 
 -- --------------------------------------------------------
 
@@ -682,7 +820,16 @@ INSERT INTO `vendas` (`id`, `cliente_id`, `empresa_id`, `lista_preco_id`, `total
 (59, 0, 1, 3, 35.00, '2025-08-31 03:51:43', 0.00, 35.00, 0.00, 35.00),
 (60, 1, 1, 4, 1.00, '2025-08-31 03:57:12', 1.00, 0.00, 0.00, 1.00),
 (61, 0, 0, 3, 0.50, '2025-08-31 03:57:31', 0.50, 0.00, 0.00, 0.50),
-(62, 1, 1, 4, 6.00, '2025-08-31 04:15:41', 0.00, 6.00, 0.00, 6.00);
+(62, 1, 1, 4, 6.00, '2025-08-31 04:15:41', 0.00, 6.00, 0.00, 6.00),
+(63, 1, 1, 9, 10.00, '2025-09-02 04:47:14', 0.00, 0.00, 0.00, 10.00),
+(64, 16, 1, 9, 6.50, '2025-09-02 04:48:23', 0.00, 0.00, 0.00, 6.50),
+(65, 14, 1, 9, 5.00, '2025-09-02 04:49:58', 0.00, 0.00, 0.00, 5.00),
+(66, 14, 1, 9, 5.00, '2025-09-02 04:53:05', 0.00, 0.00, 0.00, 5.00),
+(67, 14, 1, 9, 5.00, '2025-09-02 04:55:18', 5.00, 0.00, 0.00, 5.00),
+(68, 0, 1, 3, 4.50, '2025-09-02 05:09:04', 0.00, 0.00, 0.00, 4.50),
+(69, 1, 1, 9, 5.00, '2025-09-02 05:10:48', 5.00, 0.00, 0.00, 5.00),
+(70, 14, 1, 9, 2.50, '2025-09-02 05:42:40', 0.00, 2.50, 0.00, 2.50),
+(71, 0, 1, 3, 70.00, '2025-09-04 11:44:50', 70.00, 0.00, 0.00, 70.00);
 
 -- --------------------------------------------------------
 
@@ -784,7 +931,17 @@ INSERT INTO `vendas_itens` (`id`, `venda_id`, `material_id`, `quantidade`, `prec
 (73, 58, 2, 10.00, 7.00, 70.00, 1),
 (74, 59, 2, 5.00, 7.00, 35.00, 1),
 (77, 62, 2, 1.00, 1.00, 1.00, 1),
-(78, 62, 2, 5.00, 1.00, 5.00, 1);
+(78, 62, 2, 5.00, 1.00, 5.00, 1),
+(79, 63, 12, 10.00, 1.00, 10.00, 1),
+(80, 64, 12, 5.00, 1.00, 5.00, 1),
+(81, 64, 11, 3.00, 0.50, 1.00, 1),
+(82, 65, 12, 5.00, 1.00, 5.00, 1),
+(83, 66, 12, 5.00, 1.00, 5.00, 1),
+(84, 67, 12, 5.00, 1.00, 5.00, 1),
+(85, 68, 12, 5.00, 0.90, 4.00, 1),
+(86, 69, 12, 5.00, 1.00, 5.00, 1),
+(87, 70, 11, 5.00, 0.50, 2.00, 1),
+(88, 71, 13, 2.00, 35.00, 70.00, 1);
 
 -- --------------------------------------------------------
 
@@ -814,6 +971,13 @@ CREATE TABLE `vendas_suspensas` (
   `venda_json` text NOT NULL,
   `data_salva` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `vendas_suspensas`
+--
+
+INSERT INTO `vendas_suspensas` (`id`, `usuario_id`, `empresa_id`, `cliente_id`, `lista_preco_id`, `venda_json`, `data_salva`) VALUES
+(130, 1, 1, 14, 9, '{\"cliente_id\":14,\"lista_preco_id\":9,\"itens\":[{\"material_id\":\"12 - ferro\",\"quantidade\":\"5\",\"preco_unitario\":\"1\"}]}', '2025-09-02 11:50:01');
 
 -- --------------------------------------------------------
 
@@ -889,6 +1053,21 @@ ALTER TABLE `compras`
   ADD PRIMARY KEY (`id`),
   ADD KEY `id_cliente` (`id_cliente`),
   ADD KEY `fk_forma_pagamento` (`id_forma_pagamento`);
+
+--
+-- Índices de tabela `compras_suspensas`
+--
+ALTER TABLE `compras_suspensas`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `cliente_id` (`cliente_id`),
+  ADD KEY `empresa_id` (`empresa_id`);
+
+--
+-- Índices de tabela `configuracoes`
+--
+ALTER TABLE `configuracoes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `empresa_id` (`empresa_id`);
 
 --
 -- Índices de tabela `contas_financeiras`
@@ -1069,7 +1248,7 @@ ALTER TABLE `auditoria`
 -- AUTO_INCREMENT de tabela `caixas`
 --
 ALTER TABLE `caixas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT de tabela `carrinho`
@@ -1087,19 +1266,31 @@ ALTER TABLE `categorias`
 -- AUTO_INCREMENT de tabela `clientes`
 --
 ALTER TABLE `clientes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de tabela `clientes_anterior`
 --
 ALTER TABLE `clientes_anterior`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT de tabela `compras`
 --
 ALTER TABLE `compras`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+
+--
+-- AUTO_INCREMENT de tabela `compras_suspensas`
+--
+ALTER TABLE `compras_suspensas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+
+--
+-- AUTO_INCREMENT de tabela `configuracoes`
+--
+ALTER TABLE `configuracoes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `contas_financeiras`
@@ -1111,13 +1302,13 @@ ALTER TABLE `contas_financeiras`
 -- AUTO_INCREMENT de tabela `empresas`
 --
 ALTER TABLE `empresas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `estoque`
 --
 ALTER TABLE `estoque`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
 -- AUTO_INCREMENT de tabela `formas_pagamento`
@@ -1147,19 +1338,19 @@ ALTER TABLE `listas_precos`
 -- AUTO_INCREMENT de tabela `materiais`
 --
 ALTER TABLE `materiais`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de tabela `movimentacoes`
 --
 ALTER TABLE `movimentacoes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
 -- AUTO_INCREMENT de tabela `movimentacoes_clientes`
 --
 ALTER TABLE `movimentacoes_clientes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
 
 --
 -- AUTO_INCREMENT de tabela `movimentos_caixa`
@@ -1195,13 +1386,13 @@ ALTER TABLE `tabelas_precos`
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT de tabela `vendas`
 --
 ALTER TABLE `vendas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
 -- AUTO_INCREMENT de tabela `vendas_antigo`
@@ -1219,7 +1410,7 @@ ALTER TABLE `vendas_excluir_`
 -- AUTO_INCREMENT de tabela `vendas_itens`
 --
 ALTER TABLE `vendas_itens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
 
 --
 -- AUTO_INCREMENT de tabela `vendas_pagamentos`
@@ -1231,7 +1422,7 @@ ALTER TABLE `vendas_pagamentos`
 -- AUTO_INCREMENT de tabela `vendas_suspensas`
 --
 ALTER TABLE `vendas_suspensas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=133;
 
 --
 -- AUTO_INCREMENT de tabela `vendas_temp`
@@ -1261,6 +1452,12 @@ ALTER TABLE `clientes_anterior`
 ALTER TABLE `compras`
   ADD CONSTRAINT `compras_ibfk_1` FOREIGN KEY (`id_cliente`) REFERENCES `clientes_anterior` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_forma_pagamento` FOREIGN KEY (`id_forma_pagamento`) REFERENCES `formas_pagamento` (`id`);
+
+--
+-- Restrições para tabelas `configuracoes`
+--
+ALTER TABLE `configuracoes`
+  ADD CONSTRAINT `fk_configuracoes_empresa` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`) ON DELETE CASCADE;
 
 --
 -- Restrições para tabelas `contas_financeiras`

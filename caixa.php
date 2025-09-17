@@ -69,14 +69,12 @@ if (isset($_POST['fechar_caixa']) && $caixa_aberto) {
 
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
-include __DIR__.'/includes/footer.php';
+//include __DIR__.'/includes/footer.php';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Controle de Caixa</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
 </head>
 <body class="bg-light">
 <div class="container py-5">
@@ -84,7 +82,7 @@ include __DIR__.'/includes/footer.php';
         <h2 class="mb-4 border-bottom pb-2">Controle de Caixa</h2>
 
         <?php if (!$caixa_aberto): ?>
-            <form method="post" class="mb-4">
+            <form method="post" class="mb-4 needs-validation">
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Valor Inicial:</label>
                     <input type="number" name="valor_inicial" step="0.01" min="0" required class="form-control">
@@ -99,7 +97,7 @@ include __DIR__.'/includes/footer.php';
                 <p><strong>Valor inicial:</strong> R$ <?= number_format($caixa_aberto['valor_inicial'], 2, ',', '.') ?></p>
             </div>
 
-            <form method="post" class="row g-3 mb-4 align-items-end">
+            <form method="post" class="row g-3 mb-4 align-items-end needs-validation">
                 <div class="col-md-2">
                     <label class="form-label">Tipo</label>
                     <select name="tipo" class="form-select" required>
@@ -132,7 +130,7 @@ include __DIR__.'/includes/footer.php';
 
             <h4 class="mb-3">Movimentações</h4>
             <div class="table-responsive">
-                <table class="table table-bordered align-middle">
+                <div class="table-responsive"><table class="table table-bordered align-middle">
                     <thead class="table-light">
                         <tr>
                             <th>Tipo</th>
@@ -172,8 +170,8 @@ include __DIR__.'/includes/footer.php';
             <?php
             $saldo_atual = $caixa_aberto['valor_inicial'] + $total_entradas - $total_saidas;
             ?>
-            <div class="card mt-4 border-0 shadow-sm">
-                <div class="card-body">
+            <div class="card mt-4 border-0 shadow-sm section-card">
+                <div class="card-body section-card">
                     <h5 class="card-title">Resumo do Caixa</h5>
                     <p class="card-text text-success">
                         <strong>Total de Entradas:</strong> R$ <?= number_format($total_entradas, 2, ',', '.') ?>
@@ -192,7 +190,7 @@ include __DIR__.'/includes/footer.php';
 
         <h3 class="mb-4">Caixas Anteriores</h3>
         <div class="table-responsive">
-            <table class="table table-bordered table-hover table-striped align-middle">
+            <div class="table-responsive"><table class="table table-bordered table-hover table-striped align-middle">
                 <thead class="table-secondary">
                     <tr>
                         <th>ID</th>

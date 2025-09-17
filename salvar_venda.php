@@ -308,7 +308,7 @@ if ($cliente_id && isset($ajuste_saldo) && $ajuste_saldo != 0 && !($fiado_checke
 ?>
 
 <div class="container py-4">
-    <div class="section-card">
+    <div class="section-card section-card">
         <h2><i class="bi bi-check-circle"></i> Venda Concluída</h2>
         <p><strong>Total da Venda:</strong> R$ <?php echo number_format($total, 2, ',', '.'); ?></p>
         <p><strong>Valor Pago:</strong> R$ <?php echo number_format($valor_pago, 2, ',', '.'); ?></p>

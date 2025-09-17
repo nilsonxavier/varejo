@@ -83,7 +83,7 @@ while ($row = $resMov->fetch_assoc()) {
 ?>
 
 <div class="container py-4">
-    <div class="section-card mb-4">
+    <div class="section-card mb-4 section-card">
         <h4>Controle de Estoque</h4>
         <div class="mb-3">
             <button id="btnCadastrarProd" class="btn btn-success btn-sm">Cadastrar Produto</button>
@@ -105,7 +105,7 @@ while ($row = $resMov->fetch_assoc()) {
         </div>
 
     <div class="table-responsive">
-    <table class="table table-bordered" id="tabelaMateriais">
+    <div class="table-responsive"><table class="table table-bordered" id="tabelaMateriais">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -154,7 +154,7 @@ while ($row = $resMov->fetch_assoc()) {
         </nav>
     </div>
 
-    <div class="section-card">
+    <div class="section-card section-card">
         <h5>Histórico de Movimentações</h5>
         <?php if (!empty($_GET['error']) && $_GET['error'] === 'descricao_required'): ?>
             <div class="alert alert-danger">A descrição é obrigatória para registrar a movimentação.</div>
@@ -172,7 +172,7 @@ while ($row = $resMov->fetch_assoc()) {
         </div>
 
     <div class="table-responsive">
-    <table class="table table-striped">
+    <div class="table-responsive"><table class="table table-striped">
             <thead>
                 <tr>
                     <th class="d-none d-sm-table-cell">ID</th>
@@ -368,7 +368,7 @@ document.getElementById('btnCadastrarProd').addEventListener('click', function()
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="submit" class="btn btn-primary btn-responsive">Salvar</button>
             </div>
             </form>
         </div>

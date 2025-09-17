@@ -103,7 +103,7 @@ while ($p = $res->fetch_assoc()) {
         <div class="row g-4">
             <!-- Coluna do Formulário -->
             <div class="col-md-7">
-                <div class="section-card">
+                <div class="section-card section-card">
                     <h4>Cadastro da Compra</h4>
                     <form method="POST" action="salvar_compra.php" id="formCompra">
 
@@ -134,7 +134,7 @@ while ($p = $res->fetch_assoc()) {
             </div>
 
             <div class="col-md-5">
-                <div class="section-card">
+                <div class="section-card section-card">
                     <h4>Resumo da Compra</h4>
                     <div id="resumo_itens"></div>
                     <h5>Total: R$ <span id="total_compra">0.00</span></h5>
@@ -204,7 +204,7 @@ while ($p = $res->fetch_assoc()) {
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary" id="btnConfirmarPagamentoCompra">Confirmar Pagamento</button>
+                        <button type="button" class="btn btn-primary btn-responsive" id="btnConfirmarPagamentoCompra">Confirmar Pagamento</button>
                     </div>
                 </div>
             </div>
@@ -269,7 +269,7 @@ var finalizandoCompra = false;
                     `<button type="button" onclick="removerItem(${i})" style="background:none;border:none;cursor:pointer;margin-left:8px;">🗑️</button>`+
                     `</td></tr>`;
         }
-        const table = `<table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;"><thead><tr style="background:#f0f0f0;"><th style="text-align:left;padding:8px;border-bottom:2px solid #ccc;">Material</th><th style="text-align:right;padding:8px;border-bottom:2px solid #ccc;">Qtd</th><th style="text-align:right;padding:8px;border-bottom:2px solid #ccc;">Preço Unit.</th><th style="text-align:right;padding:8px;border-bottom:2px solid #ccc;">Subtotal</th><th style="padding:8px;border-bottom:2px solid #ccc;">Ações</th></tr></thead><tbody>`+rows+`</tbody></table>`;
+        const table = `<table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;"><thead><tr style="background:#f0f0f0;"><th style="text-align:left;padding:8px;border-bottom:2px solid #ccc;">Material</th><th style="text-align:right;padding:8px;border-bottom:2px solid #ccc;">Qtd</th><th style="text-align:right;padding:8px;border-bottom:2px solid #ccc;">Preço Unit.</th><th style="text-align:right;padding:8px;border-bottom:2px solid #ccc;">Subtotal</th><th style="padding:8px;border-bottom:2px solid #ccc;">Ações</th></tr></thead><tbody>`+rows+`</tbody></table></div>`;
         const resumo = document.getElementById('resumo_itens'); if(resumo) resumo.innerHTML = table;
         const totalEl = document.getElementById('total_compra'); if(totalEl) totalEl.innerText = total.toFixed(2);
         

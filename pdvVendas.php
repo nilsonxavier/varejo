@@ -82,7 +82,7 @@ include __DIR__.'/includes/navbar.php';
                 <label>Valor Total:</label>
                 <input type="text" id="valor_total" name="valor_total" readonly class="form-control">
             </div>
-            <button type="submit" class="btn btn-primary">Inserir Venda</button>
+            <button type="submit" class="btn btn-primary btn-responsive">Inserir Venda</button>
         </form>
     </div>
 

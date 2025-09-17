@@ -108,12 +108,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__.'/includes/header.php';
 include __DIR__.'/includes/navbar.php';
 ?>
-
-<head>
-    <meta charset="UTF-8">
-    <title>Configurações - Sistema</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet"> -->
     
     <style>
         .section-card {
@@ -275,7 +271,7 @@ include __DIR__.'/includes/navbar.php';
         <div class="row g-4">
             <!-- Configurações da Empresa -->
             <div class="col-lg-8">
-                <div class="section-card">
+                <div class="section-card section-card">
                     <div class="section-header">
                         <h4><i class="bi bi-building"></i> Dados da Empresa</h4>
                     </div>
@@ -368,7 +364,7 @@ include __DIR__.'/includes/navbar.php';
                         </div>
                         
                         <div class="d-flex justify-content-end mt-4">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary btn-responsive">
                                 <i class="bi bi-check-lg me-2"></i>Salvar Dados da Empresa
                             </button>
                         </div>
@@ -379,7 +375,7 @@ include __DIR__.'/includes/navbar.php';
             <!-- Configurações do Sistema -->
             <div class="col-lg-4">
                 <!-- Configurações de Impressão -->
-                <div class="section-card">
+                <div class="section-card section-card">
                     <div class="section-header">
                         <h4><i class="bi bi-printer"></i> Impressão</h4>
                     </div>
@@ -452,7 +448,7 @@ include __DIR__.'/includes/navbar.php';
                         </div>
                         
                         <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary btn-responsive">
                                 <i class="bi bi-check-lg me-2"></i>Salvar Configurações
                             </button>
                         </div>
@@ -462,7 +458,7 @@ include __DIR__.'/includes/navbar.php';
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts já carregados no header.php, não precisam ser duplicados -->
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -543,6 +539,6 @@ include __DIR__.'/includes/navbar.php';
         });
     </script>
 
-    <?php include __DIR__.'/includes/footer.php'; ?>
+<?php include __DIR__.'/includes/footer.php'; ?>
 </body>
 </html>

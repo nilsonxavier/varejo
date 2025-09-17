@@ -59,14 +59,14 @@ $saldo = $res->fetch_assoc()['saldo'] ?? 0;
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <div class="container py-3 d-flex justify-content-center align-items-start" style="min-height:70vh;">
-    <div class="section-card">
+    <div class="section-card section-card">
         <div class="extrato-header d-flex align-items-center gap-2 mb-2">
             <i class="bi bi-receipt fs-3 text-primary"></i>
             <h4 class="mb-0">Extrato do Cliente</h4>
         </div>
         <div class="mb-2"><strong><i class="bi bi-person"></i> Cliente:</strong> <?= htmlspecialchars($cliente['nome']) ?></div>
         <div class="extrato-saldo mb-2"><i class="bi bi-cash-coin"></i> Saldo atual: R$ <?= number_format($saldo,2,',','.') ?></div>
-        <form method="get" class="mb-2">
+        <form method="get" class="mb-2 needs-validation">
             <input type="hidden" name="id" value="<?= $cliente_id ?>">
             <div class="row g-2 align-items-center">
                 <div class="col-12 col-md-auto">
@@ -85,7 +85,7 @@ $saldo = $res->fetch_assoc()['saldo'] ?? 0;
             </div>
         </form>
         <div class="extrato-table mt-2">
-            <table class="table table-sm mb-0">
+            <div class="table-responsive"><table class="table table-sm mb-0">
                 <thead>
                     <tr>
                         <th><i class="bi bi-calendar-date"></i> Data</th>

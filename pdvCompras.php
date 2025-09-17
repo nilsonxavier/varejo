@@ -59,7 +59,7 @@ include __DIR__.'/includes/navbar.php';
 
         <div class="col-lg-6 col-md-12">
             <h4>Carrinho</h4>
-            <table class="table table-bordered" id="tabela_carrinho">
+            <div class="table-responsive"><table class="table table-bordered" id="tabela_carrinho">
                 <thead>
                     <tr>
                         <th>Produto</th>
@@ -70,7 +70,7 @@ include __DIR__.'/includes/navbar.php';
                     </tr>
                 </thead>
                 <tbody></tbody>
-            </table>
+            </table></div>
             <h5>Total: R$ <span id="total_compra">0.00</span></h5>
 
             <button class="btn btn-primary mt-3" onclick="finalizarCompra()">Finalizar Compra</button>

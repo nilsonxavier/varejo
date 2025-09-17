@@ -105,7 +105,7 @@ while ($v = $resSuspensas->fetch_assoc()) {
 <div class="container-fluid py-4">
     <div class="row g-4">
         <div class="col-md-7">
-            <div class="section-card">
+            <div class="section-card section-card">
                 <h4>Cadastro da Venda</h4>
                 <form method="POST" action="salvar_venda.php" id="formVenda">
 
@@ -163,7 +163,7 @@ while ($v = $resSuspensas->fetch_assoc()) {
                             </div>
                           </div>
                           <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary" id="btnConfirmarPagamento">Confirmar Pagamento</button>
+                            <button type="submit" class="btn btn-primary btn-responsive" id="btnConfirmarPagamento">Confirmar Pagamento</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                             
                           </div>
@@ -176,7 +176,7 @@ while ($v = $resSuspensas->fetch_assoc()) {
         </div>
 
         <div class="col-md-5">
-            <div class="section-card">
+            <div class="section-card section-card">
                 <h4>Resumo da Venda</h4>
                 <div id="resumo_itens"></div>
                 <h5>Total: R$ <span id="total_venda">0.00</span></h5>
@@ -308,7 +308,7 @@ function atualizarResumo() {
 
     html += `
             </tbody>
-        </table>
+        </table></div>
     `;
 
     document.getElementById('resumo_itens').innerHTML = html;
