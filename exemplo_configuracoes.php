@@ -47,7 +47,7 @@ while ($row = $result->fetch_assoc()) {
 <body>
     <div class="container py-4">
         <!-- Cabeçalho com botão de impressão automático -->
-        <div class="section-card print-area section-card">
+        <div class="section-card print-area section-card section-card">
             <div class="no-print d-flex justify-content-between align-items-center mb-3">
                 <h2><i class="bi bi-graph-up"></i> Relatório de Exemplo</h2>
                 <button class="btn btn-outline-primary btn-sm" onclick="imprimirPagina()">
@@ -57,28 +57,28 @@ while ($row = $result->fetch_assoc()) {
             
             <div class="row g-3 mb-4">
                 <div class="col-md-3">
-                    <div class="stats-card text-center section-card">
+                    <div class="stats-card text-center section-card section-card">
                         <i class="bi bi-people-fill fs-1"></i>
                         <h4><?php echo count($movimentacoes); ?></h4>
                         <small>Movimentações Recentes</small>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stats-card text-center section-card">
+                    <div class="stats-card text-center section-card section-card">
                         <i class="bi bi-currency-dollar fs-1"></i>
                         <h4>R$ 1.234,56</h4>
                         <small>Total do Mês</small>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stats-card text-center section-card">
+                    <div class="stats-card text-center section-card section-card">
                         <i class="bi bi-graph-up fs-1"></i>
                         <h4>+15%</h4>
                         <small>Crescimento</small>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stats-card text-center section-card">
+                    <div class="stats-card text-center section-card section-card">
                         <i class="bi bi-check-circle fs-1"></i>
                         <h4>98%</h4>
                         <small>Satisfação</small>
@@ -94,7 +94,7 @@ while ($row = $result->fetch_assoc()) {
                 </div>
             <?php else: ?>
                 <div class="table-responsive">
-                    <div class="table-responsive"><table class="table table-striped table-hover">
+                    <div class="table-responsive"><div class="table-responsive"><table class="table table-striped table-hover">
                         <thead class="table-dark">
                             <tr>
                                 <th>Data</th>
@@ -131,7 +131,7 @@ while ($row = $result->fetch_assoc()) {
         </div>
 
         <!-- Exemplo de como o tema escuro afeta diferentes componentes -->
-        <div class="section-card section-card">
+        <div class="section-card section-card section-card">
             <h4><i class="bi bi-palette"></i> Demonstração de Componentes</h4>
             
             <div class="row g-3">
@@ -180,13 +180,13 @@ while ($row = $result->fetch_assoc()) {
         </div>
 
         <!-- Demonstração de configurações atuais -->
-        <div class="section-card no-print section-card">
+        <div class="section-card no-print section-card section-card">
             <h4><i class="bi bi-gear"></i> Configurações Atuais do Sistema</h4>
             
             <div class="row g-3">
                 <div class="col-md-6">
-                    <div class="card section-card">
-                        <div class="card-body section-card">
+                    <div class="card section-card section-card">
+                        <div class="card-body section-card section-card">
                             <h6 class="card-title">
                                 <i class="bi bi-printer"></i> Configuração de Impressão
                             </h6>
@@ -202,8 +202,8 @@ while ($row = $result->fetch_assoc()) {
                 </div>
                 
                 <div class="col-md-6">
-                    <div class="card section-card">
-                        <div class="card-body section-card">
+                    <div class="card section-card section-card">
+                        <div class="card-body section-card section-card">
                             <h6 class="card-title">
                                 <i class="bi bi-palette"></i> Configuração de Tema
                             </h6>
@@ -223,7 +223,7 @@ while ($row = $result->fetch_assoc()) {
         </div>
 
         <!-- Instruções para desenvolvedores -->
-        <div class="section-card no-print section-card">
+        <div class="section-card no-print section-card section-card">
             <h4><i class="bi bi-code-slash"></i> Instruções para Desenvolvedores</h4>
             
             <div class="accordion" id="accordionInstrucoes">

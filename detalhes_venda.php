@@ -43,7 +43,7 @@ include __DIR__.'/includes/navbar.php';
 
 <div class="container py-4">
 
-    <div class="section-card section-card">
+    <div class="section-card section-card section-card">
         <h2><i class="bi bi-list-check"></i> Detalhes da Venda #<?php echo $venda_id; ?></h2>
 
         <p><strong>Data:</strong> <?php echo date('d/m/Y H:i', strtotime($venda['data'])); ?></p>
@@ -67,7 +67,7 @@ include __DIR__.'/includes/navbar.php';
         </ul>
 
         <h5>Itens da Venda:</h5>
-        <div class="table-responsive"><table class="table table-bordered">
+        <div class="table-responsive"><div class="table-responsive"><table class="table table-bordered">
             <thead>
                 <tr>
                     <th>Material</th>

@@ -103,7 +103,7 @@ while ($p = $res->fetch_assoc()) {
         <div class="row g-4">
             <!-- Coluna do Formulário -->
             <div class="col-md-7">
-                <div class="section-card section-card">
+                <div class="section-card section-card section-card">
                     <h4>Cadastro da Compra</h4>
                     <form method="POST" action="salvar_compra.php" id="formCompra">
 
@@ -134,7 +134,7 @@ while ($p = $res->fetch_assoc()) {
             </div>
 
             <div class="col-md-5">
-                <div class="section-card section-card">
+                <div class="section-card section-card section-card">
                     <h4>Resumo da Compra</h4>
                     <div id="resumo_itens"></div>
                     <h5>Total: R$ <span id="total_compra">0.00</span></h5>

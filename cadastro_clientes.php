@@ -344,9 +344,9 @@ include __DIR__ . '/includes/navbar.php';
         </div>
 
         <!-- Lista de Clientes -->
-        <div class="section-card section-card">
+        <div class="section-card section-card section-card">
             <h2><i class="bi bi-people"></i> Clientes Cadastrados</h2>
-            <form method="get" class="mb-3 d-flex flex-wrap gap-2 needs-validation">
+            <form method="get" class="mb-3 d-flex flex-wrap gap-2 needs-validation needs-validation">
                 <input type="text" name="busca" class="form-control" style="max-width:300px" placeholder="Pesquisar por nome, CPF ou telefone" value="<?= htmlspecialchars($_GET['busca'] ?? '') ?>">
                 <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i> Buscar</button>
             </form>
@@ -374,7 +374,7 @@ include __DIR__ . '/includes/navbar.php';
                 echo "<ul class='list-group'>";
                 while ($c = $clientes->fetch_assoc()) {
                     echo '<li class="list-group-item">
-                        <div class="d-flex cliente-card-flex justify-content-between align-items-start flex-wrap section-card">
+                        <div class="d-flex cliente-card-flex justify-content-between align-items-start flex-wrap section-card section-card">
                             <div class="cliente-info-block">
                                 <strong>' . $c['nome'] . '</strong> | CPF: ' . $c['cpf'] . '
                                 <div class="cliente-info-grid mt-2">

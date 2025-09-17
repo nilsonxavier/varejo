@@ -9,7 +9,10 @@ $lista_preco_id = isset($_POST['lista_preco_id']) ? intval(explode(' ', $_POST['
 // Fallback para lista de preços: POST > cliente > padrao da empresa > primeira lista da empresa
 if ($lista_preco_id <= 0) {
     if ($cliente_id) {
-        $cli_row = $conn->query("SELECT lista_preco_id FROM clientes WHERE id = " . intval($cliente_id) . " LIMIT 1")->fetch_assoc();
+        $stmt_cli = $conn->prepare("SELECT lista_preco_id FROM clientes WHERE id = ? LIMIT 1");
+        $stmt_cli->bind_param('i', $cliente_id);
+        $stmt_cli->execute();
+        $cli_row = $stmt_cli->get_result()->fetch_assoc();
         if (!empty($cli_row['lista_preco_id'])) $lista_preco_id = intval($cli_row['lista_preco_id']);
     }
 }
@@ -50,7 +53,10 @@ if (!$empresa_id || count($materiais) == 0) {
 }
 
 // Salva a compra (exemplo simples, ajuste conforme sua lógica)
-$result = $conn->query("SELECT id FROM caixas WHERE status='aberto' AND empresa_id = " . intval($empresa_id) . " LIMIT 1");
+$stmt_caixa = $conn->prepare("SELECT id FROM caixas WHERE status='aberto' AND empresa_id = ? LIMIT 1");
+$stmt_caixa->bind_param('i', $empresa_id);
+$stmt_caixa->execute();
+$result = $stmt_caixa->get_result();
 $caixa = $result->fetch_assoc();
 if (!$caixa) {
         // Exibe modal solicitando valor de abertura do caixa

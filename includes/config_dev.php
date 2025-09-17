@@ -252,7 +252,7 @@ class ERPConfig {
 }
 
 // Auto-log de desenvolvimento
-if (ERP_DEBUG && !headers_sent()) {
+if (ERP_DEBUG && !headers_sent() && isset($_SERVER['REQUEST_URI'])) {
     ERPConfig::devLog("Página acessada: " . $_SERVER['REQUEST_URI']);
 }
 

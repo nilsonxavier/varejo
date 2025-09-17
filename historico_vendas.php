@@ -45,7 +45,7 @@ $result = $conn->query($sql);
 
 <div class="container py-4">
     <!-- Seção principal com área de impressão -->
-    <div class="section-card print-area section-card">
+    <div class="section-card print-area section-card section-card">
         <!-- Cabeçalho com botão de impressão -->
         <div class="no-print d-flex justify-content-between align-items-center mb-3">
             <h2><i class="bi bi-receipt"></i> Histórico de Vendas</h2>
@@ -61,7 +61,7 @@ $result = $conn->query($sql);
         </div>
 
         <div class="table-responsive">
-            <div class="table-responsive"><table class="table table-bordered table-striped">
+            <div class="table-responsive"><div class="table-responsive"><table class="table table-bordered table-striped">
                 <thead class="table-dark">
                     <tr>
                         <th>ID Venda</th>
@@ -127,10 +127,10 @@ $result = $conn->query($sql);
     </div>
     
     <!-- Filtros e controles (não aparecem na impressão) -->
-    <div class="section-card no-print section-card">
+    <div class="section-card no-print section-card section-card">
         <h4><i class="bi bi-funnel"></i> Filtros e Controles</h4>
         
-        <form method="GET" class="row g-3 needs-validation">
+        <form method="GET" class="row g-3 needs-validation needs-validation">
             <div class="col-md-3">
                 <label class="form-label">Data Início</label>
                 <input type="date" class="form-control" name="data_inicio" 
@@ -160,7 +160,7 @@ $result = $conn->query($sql);
     </div>
     
     <!-- Resumo estatístico (não aparece na impressão) -->
-    <div class="section-card no-print section-card">
+    <div class="section-card no-print section-card section-card">
         <h4><i class="bi bi-graph-up"></i> Resumo Estatístico</h4>
         
         <div class="row g-3">
@@ -180,8 +180,8 @@ $result = $conn->query($sql);
                 $diferenca_total = $total_pago_valor - $total_vendas_valor;
             ?>
                 <div class="col-md-3">
-                    <div class="card bg-primary text-white section-card">
-                        <div class="card-body text-center section-card">
+                    <div class="card bg-primary text-white section-card section-card">
+                        <div class="card-body text-center section-card section-card">
                             <i class="bi bi-receipt fs-1"></i>
                             <h4><?php echo $total_vendas_count; ?></h4>
                             <small>Total de Vendas</small>
@@ -189,8 +189,8 @@ $result = $conn->query($sql);
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card bg-success text-white section-card">
-                        <div class="card-body text-center section-card">
+                    <div class="card bg-success text-white section-card section-card">
+                        <div class="card-body text-center section-card section-card">
                             <i class="bi bi-currency-dollar fs-1"></i>
                             <h4>R$ <?php echo number_format($total_vendas_valor, 2, ',', '.'); ?></h4>
                             <small>Valor Total</small>
@@ -198,8 +198,8 @@ $result = $conn->query($sql);
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card bg-info text-white section-card">
-                        <div class="card-body text-center section-card">
+                    <div class="card bg-info text-white section-card section-card">
+                        <div class="card-body text-center section-card section-card">
                             <i class="bi bi-calculator fs-1"></i>
                             <h4>R$ <?php echo number_format($ticket_medio, 2, ',', '.'); ?></h4>
                             <small>Ticket Médio</small>
@@ -207,8 +207,8 @@ $result = $conn->query($sql);
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card bg-<?php echo $diferenca_total >= 0 ? 'success' : 'danger'; ?> text-white section-card">
-                        <div class="card-body text-center section-card">
+                    <div class="card bg-<?php echo $diferenca_total >= 0 ? 'success' : 'danger'; ?> text-white section-card section-card">
+                        <div class="card-body text-center section-card section-card">
                             <i class="bi bi-graph-<?php echo $diferenca_total >= 0 ? 'up' : 'down'; ?> fs-1"></i>
                             <h4>R$ <?php echo number_format($diferenca_total, 2, ',', '.'); ?></h4>
                             <small>Saldo Total</small>

@@ -126,7 +126,7 @@ include __DIR__.'/includes/footer.php';
 <body>
 
 <div class="container py-4">
-    <div class="section-card section-card">
+    <div class="section-card section-card section-card">
         <h2><i class="bi bi-pencil-square"></i> Editar Cliente</h2>
         <form method="post">
                 <?php

@@ -10,7 +10,10 @@ $empresa_id = $_SESSION['usuario_empresa'];
 
 // Verificar caixa aberto
 // Buscar caixa aberto da empresa
-$result = $conn->query("SELECT id FROM caixas WHERE status='aberto' AND empresa_id = " . intval($empresa_id) . " LIMIT 1");
+$stmt_caixa = $conn->prepare("SELECT id FROM caixas WHERE status='aberto' AND empresa_id = ? LIMIT 1");
+$stmt_caixa->bind_param('i', $empresa_id);
+$stmt_caixa->execute();
+$result = $stmt_caixa->get_result();
 $caixa = $result->fetch_assoc();
 if (!$caixa) {
     echo "<div class='alert alert-danger container mt-4'>Não há caixa aberto. Venda cancelada.</div>";
@@ -21,11 +24,13 @@ $caixa_id = $caixa['id'];
 
 // Função para saldo de estoque
 function obterSaldoEstoque($conn, $material_id) {
-    $sql = "SELECT 
+    $stmt = $conn->prepare("SELECT 
                 COALESCE(SUM(CASE WHEN tipo = 'entrada' THEN quantidade ELSE 0 END), 0) -
                 COALESCE(SUM(CASE WHEN tipo = 'saida' THEN quantidade ELSE 0 END), 0) AS saldo 
-            FROM estoque WHERE material_id = $material_id";
-    $res = $conn->query($sql);
+            FROM estoque WHERE material_id = ?");
+    $stmt->bind_param('i', $material_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
     $row = $res->fetch_assoc();
     return floatval($row['saldo']);
 }
@@ -308,7 +313,7 @@ if ($cliente_id && isset($ajuste_saldo) && $ajuste_saldo != 0 && !($fiado_checke
 ?>
 
 <div class="container py-4">
-    <div class="section-card section-card">
+    <div class="section-card section-card section-card">
         <h2><i class="bi bi-check-circle"></i> Venda Concluída</h2>
         <p><strong>Total da Venda:</strong> R$ <?php echo number_format($total, 2, ',', '.'); ?></p>
         <p><strong>Valor Pago:</strong> R$ <?php echo number_format($valor_pago, 2, ',', '.'); ?></p>

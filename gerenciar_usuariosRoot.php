@@ -106,7 +106,7 @@ include __DIR__.'/includes/navbar.php';
         </div>
     <?php endif; ?>
 
-    <form method="post" class="row g-3 mb-4 needs-validation">
+    <form method="post" class="row g-3 mb-4 needs-validation needs-validation">
         <?php if ($editar_usuario): ?>
             <input type="hidden" name="id" value="<?= $editar_usuario['id'] ?>">
         <?php endif; ?>
@@ -145,7 +145,7 @@ include __DIR__.'/includes/navbar.php';
     </form>
 
     <div class="table-responsive">
-        <div class="table-responsive"><table class="table table-striped table-hover align-middle">
+        <div class="table-responsive"><div class="table-responsive"><table class="table table-striped table-hover align-middle">
             <thead class="table-light">
                 <tr>
                     <th>ID</th>

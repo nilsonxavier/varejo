@@ -153,9 +153,9 @@ include __DIR__.'/includes/footer.php';
 <div class="container py-4">
 
     <!-- Cadastro de Materiais -->
-    <div class="section-card section-card">
+    <div class="section-card section-card section-card">
         <h2><i class="bi bi-box-seam"></i> Cadastro de Materiais</h2>
-        <form method="post" class="mb-3 needs-validation">
+        <form method="post" class="mb-3 needs-validation needs-validation">
             <div class="input-group">
                 <input type="text" name="nome_material" class="form-control" placeholder="Nome do Material" required>
                 <button type="submit" name="adicionar_material" class="btn btn-success">Adicionar</button>
@@ -183,7 +183,7 @@ include __DIR__.'/includes/footer.php';
     </div>
 
     <!-- Criar Lista de Preços -->
-    <div class="section-card section-card">
+    <div class="section-card section-card section-card">
         <h2><i class="bi bi-tags"></i> Criar Nova Lista de Preços</h2>
         <form method="post">
             <div class="input-group mb-3">
@@ -194,7 +194,7 @@ include __DIR__.'/includes/footer.php';
     </div>
 
     <!-- Listas Existentes -->
-    <div class="section-card section-card">
+    <div class="section-card section-card section-card">
         <h2><i class="bi bi-list-ul"></i> Listas de Preços Existentes</h2>
         <?php
         $listas = $conn->query("SELECT * FROM listas_precos WHERE empresa_id = '$empresa_id' ORDER BY created_at DESC");

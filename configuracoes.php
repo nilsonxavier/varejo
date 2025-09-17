@@ -271,7 +271,7 @@ include __DIR__.'/includes/navbar.php';
         <div class="row g-4">
             <!-- Configurações da Empresa -->
             <div class="col-lg-8">
-                <div class="section-card section-card">
+                <div class="section-card section-card section-card">
                     <div class="section-header">
                         <h4><i class="bi bi-building"></i> Dados da Empresa</h4>
                     </div>
@@ -375,7 +375,7 @@ include __DIR__.'/includes/navbar.php';
             <!-- Configurações do Sistema -->
             <div class="col-lg-4">
                 <!-- Configurações de Impressão -->
-                <div class="section-card section-card">
+                <div class="section-card section-card section-card">
                     <div class="section-header">
                         <h4><i class="bi bi-printer"></i> Impressão</h4>
                     </div>

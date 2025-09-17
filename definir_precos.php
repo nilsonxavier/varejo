@@ -69,12 +69,12 @@ include __DIR__.'/includes/footer.php';
 
 <div class="container py-4">
 
-    <div class="section-card section-card">
+    <div class="section-card section-card section-card">
         <h2><i class="bi bi-currency-dollar"></i> Definir Preços - <?= htmlspecialchars($lista['nome']) ?></h2>
 
         <form method="post">
             <div class="table-responsive">
-                <div class="table-responsive"><table class="table table-bordered align-middle">
+                <div class="table-responsive"><div class="table-responsive"><table class="table table-bordered align-middle">
                     <thead class="table-light">
                         <tr>
                             <th>Material</th>

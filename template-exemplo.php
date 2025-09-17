@@ -117,7 +117,7 @@ include __DIR__ . '/includes/navbar.php';
     <?php endif; ?>
 
     <!-- Conteúdo principal em card responsivo -->
-    <div class="section-card section-card">
+    <div class="section-card section-card section-card">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="mb-0">
                 <i class="bi bi-list-ul me-2"></i>
@@ -137,7 +137,7 @@ include __DIR__ . '/includes/navbar.php';
 
         <!-- Tabela responsiva -->
         <div class="table-responsive">
-            <div class="table-responsive"><table class="table table-hover">
+            <div class="table-responsive"><div class="table-responsive"><table class="table table-hover">
                 <thead class="table-dark">
                     <tr>
                         <th>ID</th>

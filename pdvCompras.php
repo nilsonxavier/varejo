@@ -59,7 +59,7 @@ include __DIR__.'/includes/navbar.php';
 
         <div class="col-lg-6 col-md-12">
             <h4>Carrinho</h4>
-            <div class="table-responsive"><table class="table table-bordered" id="tabela_carrinho">
+            <div class="table-responsive"><div class="table-responsive"><table class="table table-bordered" id="tabela_carrinho">
                 <thead>
                     <tr>
                         <th>Produto</th>
